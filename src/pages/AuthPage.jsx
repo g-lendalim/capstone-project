@@ -6,7 +6,7 @@ import {
   GoogleAuthProvider, 
   signInWithPopup,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword 
+  createUserWithEmailAndPassword
 } from "firebase/auth";
 import { 
   Container, 
@@ -16,6 +16,7 @@ import {
   Row, 
   Col
 } from "react-bootstrap";
+import api from "../api";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -25,6 +26,16 @@ export default function AuthPage() {
   const auth = getAuth();
   const { currentUser } = useContext(AuthContext);
 
+  const createUserInDatabase = async (token) => {
+    try {
+      localStorage.setItem('token', token); // ✅ Save for interceptor
+      console.log("🔥 Firebase ID Token:", token);
+      await api.post("/api/users", {}); // token already auto-attached by interceptor
+    } catch (error) {
+      console.error("Error inserting user into DB:", error);
+    }
+  };  
+
   useEffect(() => {
     if (currentUser) navigate("/profile");
   }, [currentUser, navigate]);
@@ -32,24 +43,33 @@ export default function AuthPage() {
   const handleAuth = async (e) => {
     e.preventDefault();
     try {
+      let userCredential;
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
       }
+  
+      const user = userCredential.user;
+      const token = await user.getIdToken();
+      await createUserInDatabase(token); // ✅ pass the token
+  
     } catch (error) {
       console.error(error.message);
     }
-  };
+  };  
 
   const handleGoogleAuth = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const token = await result.user.getIdToken();
+      await createUserInDatabase(token); 
     } catch (error) {
       console.error(error.message);
     }
   };
+  
 
   return (
     <Container className="my-5">
