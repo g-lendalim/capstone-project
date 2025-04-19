@@ -1,5 +1,5 @@
 import React from 'react';
-import { OverlayTrigger, Tooltip, Row, Col, Modal, Button, Form} from 'react-bootstrap';
+import { OverlayTrigger, Tooltip, Row, Col, Modal, Button, Form } from 'react-bootstrap';
 
 export default function AlarmFormModal({
   show,
@@ -13,8 +13,23 @@ export default function AlarmFormModal({
   removeChecklistItem,
   handleSubmit,
   showCalendar,
-  setShowCalendar
+  setShowCalendar,
 }) {
+  const handleReminderChange = (e) => {
+    const value = e.target.value;
+    handleFormChange(e); // Update the form data
+
+    if (value && formData.date && formData.time) {
+      const hoursBefore = parseInt(value.split(' ')[0]); 
+      const selectedDateTime = new Date(`${formData.date}T${formData.time}`);
+      if (!isNaN(selectedDateTime)) {
+        handleReminder(selectedDateTime, hoursBefore);
+      } else {
+        console.warn('Invalid date/time for reminder calculation.');
+      }
+    }
+  };
+
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton style={{ backgroundColor: '#e6e6fa', color: '#4b0082' }}>
@@ -36,7 +51,7 @@ export default function AlarmFormModal({
               name="type"
               value={formData.type}
               onChange={(e) => handleTypeChange(e.target.value)}
-              style={{borderColor: '#4b0082'}}
+              style={{ borderColor: '#4b0082' }}
             >
               <option value="Morning">Rise & Shine</option>
               <option value="Bedtime">Time to Wind Down</option>
@@ -53,15 +68,15 @@ export default function AlarmFormModal({
               value={formData.label}
               onChange={handleFormChange}
               placeholder={
-                formData.type === "Morning"
-                  ? "Begin with Purpose"
-                  : formData.type === "Bedtime"
-                  ? "Rest and Recharge"
-                  : formData.type === "Visit"
-                  ? "Upcoming Appointment"
-                  : formData.type === "Medication"
-                  ? "Take Your Medication"
-                  : ""
+                formData.type === 'Morning'
+                  ? 'Begin with Purpose'
+                  : formData.type === 'Bedtime'
+                  ? 'Rest and Recharge'
+                  : formData.type === 'Visit'
+                  ? 'Upcoming Appointment'
+                  : formData.type === 'Medication'
+                  ? 'Take Your Medication'
+                  : ''
               }
               style={{ borderColor: '#4b0082' }}
             />
@@ -123,29 +138,19 @@ export default function AlarmFormModal({
             </Modal.Footer>
           </Modal>
 
-          {formData.type === 'Visit' && 
+          {formData.type === 'Visit' && (
             <Form.Group className="mt-3">
               <Form.Label style={{ color: '#4b0082' }}>Set Reminder</Form.Label>
               <Form.Control
                 as="select"
                 name="reminder"
                 value={formData.reminder || ''}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  handleFormChange(e); 
-                
-                  if (value) {
-                    const hoursBefore = parseInt(value.split(' ')[0]); // Extract the number part from "X hours before"
-                
-                    const selectedDateTime = new Date(`${formData.date}T${formData.time}`);
-                    if (!isNaN(selectedDateTime)) {
-                      handleReminder(selectedDateTime, hoursBefore);
-                    } else {
-                      console.warn("Invalid date/time for reminder calculation.");
-                    }
-                  }
-                }}                
-                style={{ borderColor: '#4b0082', color: '#4b0082', backgroundColor: '#f8f8ff' }}
+                onChange={handleReminderChange}
+                style={{
+                  borderColor: '#4b0082',
+                  color: '#4b0082',
+                  backgroundColor: '#f8f8ff',
+                }}
               >
                 <option value="">No Reminder</option>
                 <option value="1 hour before">1 Hour Before</option>
@@ -157,7 +162,7 @@ export default function AlarmFormModal({
                 <option value="24 hours before">24 Hours Before</option>
               </Form.Control>
             </Form.Group>
-          }
+          )}
 
           <Form.Group className="mt-3">
             <Form.Label style={{ color: '#4b0082' }}>Checklist</Form.Label>
@@ -198,7 +203,11 @@ export default function AlarmFormModal({
         </Form>
       </Modal.Body>
       <Modal.Footer style={{ backgroundColor: '#e6e6fa' }}>
-        <Button variant="secondary" onClick={onHide} style={{ backgroundColor: '#dcdcdc', color: '#4b0082' }}>
+        <Button
+          variant="secondary"
+          onClick={onHide}
+          style={{ backgroundColor: '#dcdcdc', color: '#4b0082' }}
+        >
           Close
         </Button>
         <Button

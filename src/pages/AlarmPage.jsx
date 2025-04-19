@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Modal, Card, Row, Col } from 'react-bootstrap';
+import React, { useState, useContext, useEffect } from 'react';
+import { Button, Card, Row, Col } from 'react-bootstrap';
 import api from '../api';
-import { useContext } from "react";
 import { AuthContext } from "../components/AuthProvider";
 import AlarmFormModal from '../components/AlarmFormModal';
+import LogPromptModal from '../components/LogPromptModal';
+import AlarmCard from '../components/AlarmCard';
 
 export default function AlarmPage() {
   const { currentUser } = useContext(AuthContext);
 
   const [alarms, setAlarms] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ type: 'Morning', time: '', label: '', checklist: [] });
+  const [formData, setFormData] = useState({ type: '', time: '', label: '', checklist: [] });
   const [showCalendar, setShowCalendar] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [currentAlarm, setCurrentAlarm] = useState(null);
 
   const defaultAlarmTypes = [
     { displayName: 'Rise & Shine', type: 'Morning' },
@@ -43,15 +46,15 @@ export default function AlarmPage() {
     setCheckedItems((prev) => {
       const current = prev[alarmId] || [];
       const updated = current.includes(item)
-        ? current.filter((i) => i !== item) // Uncheck
-        : [...current, item]; // Check
-  
+        ? current.filter((i) => i !== item)
+        : [...current, item];
+
       return {
         ...prev,
         [alarmId]: updated,
       };
     });
-  };  
+  };
 
   const handleChecklistChange = (index, value) => {
     const updatedChecklist = [...formData.checklist];
@@ -74,21 +77,32 @@ export default function AlarmPage() {
 
   const handleSubmit = async () => {
     try {
-      const response = await api.post('/alarms', {
-        user_id: currentUser.uid,
-        ...formData,
-      }); 
-      setAlarms((prev) => [...prev, response.data]);
+      if (formData.id) {
+        const response = await api.put(`/alarms/${formData.id}`, {
+          user_id: currentUser.uid,
+          ...formData,
+        });
+        setAlarms((prev) =>
+          prev.map((alarm) => (alarm.id === formData.id ? response.data : alarm))
+        );
+      } else {
+        const response = await api.post('/alarms', {
+          user_id: currentUser.uid,
+          ...formData,
+        });
+
+        setAlarms((prev) => [...prev, response.data]);
+      }
       setShowModal(false);
       setFormData({ type: '', time: '', label: '', checklist: [] });
     } catch (err) {
-      console.error('Error creating alarm:', err);
+      console.error('Error saving alarm:', err);
     }
   };
 
   const groupAlarmsByType = (alarms) => {
     const grouped = {};
-  
+
     alarms.forEach((alarm) => {
       const type = alarm.type;
       if (!grouped[type]) {
@@ -96,16 +110,15 @@ export default function AlarmPage() {
       }
       grouped[type].push(alarm);
     });
-  
+
     defaultAlarmTypes.forEach(({ type }) => {
       if (!grouped[type]) {
         grouped[type] = [];
       }
     });
-  
+
     return grouped;
   };
-  
 
   const groupedAlarms = groupAlarmsByType(alarms);
 
@@ -123,19 +136,20 @@ export default function AlarmPage() {
     setShowModal(true);
   };
 
+  const handleAlarmRing = (alarm) => {
+    console.log(`Alarm "${alarm.label}" is ringing!`);
+    setCurrentAlarm(alarm);
+    setShowLogModal(true); 
+  };
+
   const handleReminder = (selectedDateTime, hoursBefore) => {
-    const visitDateTime = new Date(selectedDateTime); // Convert selected date and time to a Date object
-    const reminderTime = new Date(visitDateTime.getTime() - hoursBefore * 60 * 60 * 1000); // Subtract the specified hours
-    const now = new Date();
-    const timeUntilReminder = reminderTime - now;
+    const reminderTime = new Date(selectedDateTime);
+    reminderTime.setHours(reminderTime.getHours() - hoursBefore);
   
-    if (timeUntilReminder > 0) {
-      setTimeout(() => {
-        alert(`Reminder: Your visit is scheduled for ${visitDateTime.toLocaleString()}`);
-      }, timeUntilReminder);
-    } else {
-      console.warn("Reminder time has already passed.");
-    }
+    setFormData((prev) => ({
+      ...prev,
+      reminderTime: reminderTime.toISOString(), // Store the reminder time in ISO format
+    }));
   };
 
   return (
@@ -160,109 +174,21 @@ export default function AlarmPage() {
                   <i className="bi bi-plus-lg"></i> Add New Alarm
                 </Button>
 
-                  {groupedAlarms[type].length === 0 ? (
-                    <p className="text-muted mt-2">No alarms set</p>
-                  ) : (
-                    groupedAlarms[type].map((alarm) => (
-                      <Card key={alarm.id} className="mb-3 border rounded shadow-sm mt-2">
-                        <Card.Body>
-                          {/* Alarm Header */}
-                          <div className="d-flex justify-content-between align-items-center mb-2">
-                            <div>
-                              <h5 className="mb-1">{alarm.label}</h5>
-                              <small className="text-muted">{alarm.type}</small>
-                            </div>
-                            <div className="d-flex">
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                className="me-2"
-                                onClick={() => handleEdit(alarm)}
-                              >
-                                <i className="bi bi-pencil"></i>
-                              </Button>
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => handleDelete(alarm.id)}
-                              >
-                                <i className="bi bi-trash"></i>
-                              </Button>
-                            </div>
-                          </div>
-                  
-                          {/* Time & Date */}
-                          <div className="mb-2">
-                            {alarm.date && alarm.type === 'Visit' && (
-                              <div className="text-muted small mb-1">
-                                <i className="bi bi-calendar-event me-2"></i>
-                                {new Date(alarm.date).toLocaleDateString(undefined, {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                })}
-                              </div>
-                            )}
-                            {alarm.time && (
-                              <div className="text-muted small mb-1">
-                                <i className="bi bi-clock me-2"></i>
-                                {alarm.time}
-                              </div>
-                            )}
-                            {alarm.type === 'Visit' && alarm.reminder && (
-                              <div className="text-muted small mb-1">
-                                <i className="bi bi-bell me-2"></i>
-                                Reminder: {alarm.reminder}
-                              </div>
-                            )}
-                          </div>
-                  
-                          {/* Checklist */}
-                          {alarm.checklist.length > 0 && (
-                            <div className="small mt-3">
-                              <strong className="d-block mb-2">
-                                <i className="bi bi-list-check me-2"></i>Checklist
-                              </strong>
-                              <ul className="list-unstyled ms-1">
-                                {alarm.checklist.map((item, index) => (
-                                  <li
-                                    key={index}
-                                    className="d-flex justify-content-between align-items-center py-1 px-2 rounded bg-white border mb-2"
-                                  >
-                                    <span
-                                      className={`me-2 ${
-                                        checkedItems[alarm.id]?.includes(item)
-                                          ? 'text-decoration-line-through text-muted'
-                                          : ''
-                                      }`}
-                                    >
-                                      {item}
-                                    </span>
-                                    <button
-                                      className={`btn btn-sm ${
-                                        checkedItems[alarm.id]?.includes(item)
-                                          ? 'btn-outline-secondary'
-                                          : 'btn-outline-success'
-                                      }`}
-                                      onClick={() => handleCheck(alarm.id, item)}
-                                    >
-                                      <i
-                                        className={`bi ${
-                                          checkedItems[alarm.id]?.includes(item)
-                                            ? 'bi-x-lg'
-                                            : 'bi-check-lg'
-                                        }`}
-                                      ></i>
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </Card.Body>
-                      </Card>
-                    ))
-                  )}                  
+                {groupedAlarms[type].length === 0 ? (
+                  <p className="text-muted mt-2">No alarms set</p>
+                ) : (
+                  groupedAlarms[type].map((alarm) => (
+                    <AlarmCard
+                      key={alarm.id}
+                      alarm={alarm}
+                      handleEdit={handleEdit}
+                      handleDelete={handleDelete}
+                      handleAlarmRing={handleAlarmRing}
+                      checkedItems={checkedItems}
+                      handleCheck={handleCheck}
+                    />
+                  ))
+                )}
               </Card.Body>
             </Card>
           </Col>
@@ -282,6 +208,12 @@ export default function AlarmPage() {
         removeChecklistItem={removeChecklistItem}
         handleReminder={handleReminder}
         handleSubmit={handleSubmit}
+      />
+
+      <LogPromptModal
+        show={showLogModal}
+        onHide={() => setShowLogModal(false)}
+        alarm={currentAlarm} 
       />
     </div>
   );
