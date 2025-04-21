@@ -16,6 +16,7 @@ export default function AlarmPage() {
   const [checkedItems, setCheckedItems] = useState({});
   const [showLogModal, setShowLogModal] = useState(false);
   const [currentAlarm, setCurrentAlarm] = useState(null);
+  const [dismissedAlarms, setDismissedAlarms] = useState({});
 
   const defaultAlarmTypes = [
     { displayName: 'Rise & Shine', type: 'Morning' },
@@ -142,6 +143,11 @@ export default function AlarmPage() {
     setShowLogModal(true); 
   };
 
+  const dismissAlarm = (alarmId) => {
+    setDismissedAlarms(prev => ({ ...prev, [alarmId]: true }));
+    setShowLogModal(false); 
+  };  
+
   const handleReminder = (selectedDateTime, hoursBefore) => {
     const reminderTime = new Date(selectedDateTime);
     reminderTime.setHours(reminderTime.getHours() - hoursBefore);
@@ -186,6 +192,7 @@ export default function AlarmPage() {
                       handleAlarmRing={handleAlarmRing}
                       checkedItems={checkedItems}
                       handleCheck={handleCheck}
+                      disabled={dismissedAlarms[alarm.id]}
                     />
                   ))
                 )}
@@ -213,7 +220,9 @@ export default function AlarmPage() {
       <LogPromptModal
         show={showLogModal}
         onHide={() => setShowLogModal(false)}
-        alarm={currentAlarm} 
+        alarm={currentAlarm}
+        userId={currentUser.uid}
+        dismissAlarm={dismissAlarm}
       />
     </div>
   );

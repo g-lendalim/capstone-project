@@ -1,10 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
-const useAlarm = (alarmTime, callback, reminderTime = null) => {
+export default function useAlarm(alarmTime, callback, reminderTime = null, disabled = false) {
+  const isRinging = useRef(false);
+
   useEffect(() => {
+    if (disabled || isRinging.current) return;
+    
     const now = new Date();
-
     const targetTime = new Date(reminderTime || alarmTime);
+    
+    console.log('Alarm Time:', alarmTime);
+    console.log('Reminder Time:', reminderTime);
+    console.log('Target Time:', targetTime);
+
     if (isNaN(targetTime)) {
       console.warn('Invalid alarm/reminder time:', reminderTime || alarmTime);
       return;
@@ -15,14 +23,20 @@ const useAlarm = (alarmTime, callback, reminderTime = null) => {
     if (delay <= 0) {
       // If it's already time or past due, trigger immediately
       callback();
+      isRinging.current = true;
       return;
     }
 
-    const timer = setTimeout(callback, delay);
+    const timer = setTimeout(() => {
+      if (!isRinging.current && !disabled) {
+        callback();
+        isRinging.current = true;
+      }
+    }, delay);
 
     return () => clearTimeout(timer);
-  }, [alarmTime, callback, reminderTime]);
+  }, [alarmTime, callback, reminderTime, disabled]);
 };
 
-export default useAlarm;
+
 

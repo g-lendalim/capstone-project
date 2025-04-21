@@ -9,7 +9,7 @@ import api from "../api";
 import { storage } from "../firebase"; 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-export default function LogPromptModal({ show, onHide, alarm, userId }) {
+export default function LogPromptModal({ show, onHide, alarm, userId, dismissAlarm }) {
   const [step, setStep] = useState(1);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const navigate = useNavigate();
@@ -159,6 +159,7 @@ export default function LogPromptModal({ show, onHide, alarm, userId }) {
   const onSubmitLog = async () => {
     const success = await handleSubmit();
     if (success) {
+      dismissAlarm(alarm.id);
       resetForm();
       setShowSkipConfirm(false);
       onHide();
@@ -167,6 +168,7 @@ export default function LogPromptModal({ show, onHide, alarm, userId }) {
   };
 
   const onSkipLog = () => {
+    dismissAlarm(alarm.id);
     resetForm();
     setShowSkipConfirm(false);
     onHide();
