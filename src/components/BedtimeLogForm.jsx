@@ -1,6 +1,11 @@
 import { Accordion, Form } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { setCoreLogs, setExtendedLogs } from "../features/logs/logsSlice";
 
-export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, setExtendedLogs, handleImageUpload }) {
+export default function BedtimeLogForm({ handleImageUpload }) {
+    const dispatch = useDispatch();
+    const { coreLogs, extendedLogs } = useSelector((state) => state.logs);
+
     return (
         <div>
             {/* Mood */}
@@ -11,7 +16,7 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                     max={10}
                     value={coreLogs.mood}
                     onChange={(e) =>
-                        setCoreLogs({ ...coreLogs, mood: parseInt(e.target.value) })
+                        dispatch(setCoreLogs({ ...coreLogs, mood: parseInt(e.target.value) }))
                     }
                 />
                 <Form.Text>{coreLogs.mood}/10</Form.Text>
@@ -29,13 +34,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                                 max={10}
                                 value={extendedLogs.emotional_state.anxiety_level}
                                 onChange={(e) =>
-                                    setExtendedLogs({
+                                    dispatch(setExtendedLogs({
                                         ...extendedLogs,
                                         emotional_state: {
                                             ...extendedLogs.emotional_state,
                                             anxiety_level: parseInt(e.target.value),
                                         },
-                                    })
+                                    }))
                                 }
                             />
                         </Form.Group>
@@ -47,13 +52,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                                 max={10}
                                 value={extendedLogs.emotional_state.irritability_level}
                                 onChange={(e) =>
-                                    setExtendedLogs({
+                                    dispatch(setExtendedLogs({
                                         ...extendedLogs,
                                         emotional_state: {
                                             ...extendedLogs.emotional_state,
                                             irritability_level: parseInt(e.target.value),
                                         },
-                                    })
+                                    }))
                                 }
                             />
                         </Form.Group>
@@ -65,13 +70,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                                 max={10}
                                 value={extendedLogs.emotional_state.stress_level}
                                 onChange={(e) =>
-                                    setExtendedLogs({
+                                    dispatch(setExtendedLogs({
                                         ...extendedLogs,
                                         emotional_state: {
                                             ...extendedLogs.emotional_state,
                                             stress_level: parseInt(e.target.value),
                                         },
-                                    })
+                                    }))
                                 }
                             />
                         </Form.Group>
@@ -87,13 +92,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                             label="🧘 I felt mentally clear today"
                             checked={extendedLogs.cognitive_state.cognitive_clarity}
                             onChange={(e) =>
-                                setExtendedLogs({
+                                dispatch(setExtendedLogs({
                                     ...extendedLogs,
                                     cognitive_state: {
                                         ...extendedLogs.cognitive_state,
                                         cognitive_clarity: e.target.checked,
                                     },
-                                })
+                                }))
                             }
                         />
 
@@ -102,13 +107,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                             label="🌧️ I had negative thoughts"
                             checked={extendedLogs.cognitive_state.negative_thoughts}
                             onChange={(e) =>
-                                setExtendedLogs({
+                                dispatch(setExtendedLogs({
                                     ...extendedLogs,
                                     cognitive_state: {
                                         ...extendedLogs.cognitive_state,
                                         negative_thoughts: e.target.checked,
                                     },
-                                })
+                                }))
                             }
                         />
 
@@ -117,13 +122,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                             label="👁️ I experienced intrusive thoughts"
                             checked={extendedLogs.cognitive_state.intrusive_thoughts}
                             onChange={(e) =>
-                                setExtendedLogs({
+                                dispatch(setExtendedLogs({
                                     ...extendedLogs,
                                     cognitive_state: {
                                         ...extendedLogs.cognitive_state,
                                         intrusive_thoughts: e.target.checked,
                                     },
-                                })
+                                }))
                             }
                         />
 
@@ -135,13 +140,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                                     rows={2}
                                     value={extendedLogs.cognitive_state.intrusive_thoughts_description}
                                     onChange={(e) =>
-                                        setExtendedLogs({
+                                        dispatch(setExtendedLogs({
                                             ...extendedLogs,
                                             cognitive_state: {
                                                 ...extendedLogs.cognitive_state,
                                                 intrusive_thoughts_description: e.target.value,
                                             },
-                                        })
+                                        }))
                                     }
                                 />
                             </Form.Group>
@@ -159,13 +164,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                             <Form.Select
                                 value={extendedLogs.lifestyle_factors.social_interaction_level}
                                 onChange={(e) =>
-                                    setExtendedLogs({
+                                    dispatch(setExtendedLogs({
                                         ...extendedLogs,
                                         lifestyle_factors: {
                                             ...extendedLogs.lifestyle_factors,
                                             social_interaction_level: e.target.value,
                                         },
-                                    })
+                                    }))
                                 }
                             >
                                 <option value="">Select</option>
@@ -182,13 +187,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                             <Form.Select
                                 value={extendedLogs.lifestyle_factors.physical_activity_level}
                                 onChange={(e) =>
-                                    setExtendedLogs({
+                                    dispatch(setExtendedLogs({
                                         ...extendedLogs,
                                         lifestyle_factors: {
                                             ...extendedLogs.lifestyle_factors,
                                             physical_activity_level: e.target.value,
                                         },
-                                    })
+                                    }))
                                 }
                             >
                                 <option value="">Select</option>
@@ -206,13 +211,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                                 type="number"
                                 value={extendedLogs.lifestyle_factors.screen_time_minutes}
                                 onChange={(e) =>
-                                    setExtendedLogs({
+                                    dispatch(setExtendedLogs({
                                         ...extendedLogs,
                                         lifestyle_factors: {
                                             ...extendedLogs.lifestyle_factors,
                                             screen_time_minutes: parseInt(e.target.value),
                                         },
-                                    })
+                                    }))
                                 }
                             />
                         </Form.Group>
@@ -234,13 +239,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                                     name="substanceUse"
                                     checked={extendedLogs.lifestyle_factors.substance_use === true}
                                     onChange={() =>
-                                        setExtendedLogs({
+                                        dispatch(setExtendedLogs({
                                             ...extendedLogs,
                                             lifestyle_factors: {
                                                 ...extendedLogs.lifestyle_factors,
                                                 substance_use: true,
                                             },
-                                        })
+                                        }))
                                     }
                                 />
                                 <Form.Check
@@ -250,13 +255,13 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                                     name="substanceUse"
                                     checked={extendedLogs.lifestyle_factors.substance_use === false}
                                     onChange={() =>
-                                        setExtendedLogs({
+                                        dispatch(setExtendedLogs({
                                             ...extendedLogs,
                                             lifestyle_factors: {
                                                 ...extendedLogs.lifestyle_factors,
                                                 substance_use: false,
                                             },
-                                        })
+                                        }))
                                     }
                                 />
                             </div>
@@ -276,10 +281,10 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                                     name="unusualExperiences"
                                     checked={extendedLogs.psychotic_symptoms === true}
                                     onChange={() =>
-                                        setExtendedLogs({
+                                        dispatch(setExtendedLogs({
                                             ...extendedLogs,
                                             psychotic_symptoms: true,
-                                        })
+                                        }))
                                     }
                                 />
                                 <Form.Check
@@ -289,10 +294,10 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                                     name="unusualExperiences"
                                     checked={extendedLogs.psychotic_symptoms === false}
                                     onChange={() =>
-                                        setExtendedLogs({
+                                        dispatch(setExtendedLogs({
                                             ...extendedLogs,
                                             psychotic_symptoms: false,
-                                        })
+                                        }))
                                     }
                                 />
                             </div>
@@ -309,7 +314,7 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                     rows={3}
                     placeholder="Write anything you'd like to reflect on..."
                     value={coreLogs.journal}
-                    onChange={(e) => setCoreLogs({ ...coreLogs, journal: e.target.value })}
+                    onChange={(e) => dispatch(setCoreLogs({ ...coreLogs, journal: e.target.value }))}
                 />
             </Form.Group>
 
@@ -320,7 +325,7 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                     placeholder="What made you smile today?"
                     value={extendedLogs.gratitude_entry}
                     onChange={(e) =>
-                        setExtendedLogs({ ...extendedLogs, gratitude_entry: e.target.value })
+                        dispatch(setExtendedLogs({ ...extendedLogs, gratitude_entry: e.target.value }))
                     }
                 />
             </Form.Group>
@@ -334,10 +339,8 @@ export default function BedtimeLogForm({ coreLogs, setCoreLogs, extendedLogs, se
                         const file = e.target.files[0];
                         if (file) {
                             const url = await handleImageUpload(file);
-                            setExtendedLogs((prev) => ({
-                                ...prev,
-                                image_url: url,
-                            }));
+                            const updatedLogs = { ...extendedLogs, image_url: url };
+                            dispatch(setExtendedLogs(updatedLogs));
                         }
                     }}
                 />

@@ -1,33 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Modal, Button, Form, ProgressBar } from "react-bootstrap";
-import api from "../api";
+import { Modal, Button, Form, ProgressBar, Accordion } from "react-bootstrap";
 import { storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useSelector, useDispatch } from "react-redux";
+import { resetLogs, saveLog, setCoreLogs, setExtendedLogs } from "../features/logs/logsSlice";
 
 export default function ManualLogModal({ show, onHide, userId }) {
   const [step, setStep] = useState(1);
-  const [coreLogs, setCoreLogs] = useState({
-    mood: 0,
-    energy_level: 0,
-    sleep_log: {
-      sleep_hours: 0,
-      sleep_quality: 0,
-      night_awakenings: 0,
-    },
-    medication_taken: false,
-    journal: "",
-  });
-
-  const [extendedLogs, setExtendedLogs] = useState({
-    lifestyle_factors: {
-      social_interaction_level: "",
-      physical_activity_level: "",
-      screen_time_minutes: 0,
-    },
-    gratitude_entry: "",
-    image_url: "",
-  });
+  const { coreLogs, extendedLogs } = useSelector((state) => state.logs);
+  const dispatch = useDispatch();
 
   const navigate = useNavigate();
 
@@ -35,7 +17,7 @@ export default function ManualLogModal({ show, onHide, userId }) {
     const imageRef = ref(storage, `logs/${file.name}`);
     await uploadBytes(imageRef, file);
     const url = await getDownloadURL(imageRef);
-    setExtendedLogs((prev) => ({ ...prev, image_url: url }));
+    dispatch(setExtendedLogs({ ...extendedLogs, image_url: url }));
   };
 
   const handleSubmit = async () => {
@@ -47,7 +29,7 @@ export default function ManualLogModal({ show, onHide, userId }) {
     };
 
     try {
-      await api.post("/logs", payload);
+      await dispatch(saveLog({ userId, logData: payload })).unwrap();
       return true;
     } catch (err) {
       console.error("Log error", err);
@@ -66,26 +48,7 @@ export default function ManualLogModal({ show, onHide, userId }) {
 
   const resetForm = () => {
     setStep(1);
-    setCoreLogs({
-      mood: 0,
-      energy_level: 0,
-      sleep_log: {
-        sleep_hours: 0,
-        sleep_quality: 0,
-        night_awakenings: 0,
-      },
-      medication_taken: false,
-      journal: "",
-    });
-    setExtendedLogs({
-      lifestyle_factors: {
-        social_interaction_level: "",
-        physical_activity_level: "",
-        screen_time_minutes: 0,
-      },
-      gratitude_entry: "",
-      image_url: "",
-    });
+    dispatch(resetLogs());
   };
 
   const renderStep = () => {
@@ -102,7 +65,7 @@ export default function ManualLogModal({ show, onHide, userId }) {
                 max={10}
                 value={coreLogs.mood}
                 onChange={(e) =>
-                  setCoreLogs({ ...coreLogs, mood: parseInt(e.target.value) })
+                  dispatch(setCoreLogs({ ...coreLogs, mood: parseInt(e.target.value) }))
                 }
               />
               <Form.Text>{coreLogs.mood}/10</Form.Text>
@@ -115,7 +78,7 @@ export default function ManualLogModal({ show, onHide, userId }) {
                 max={10}
                 value={coreLogs.energy_level}
                 onChange={(e) =>
-                  setCoreLogs({ ...coreLogs, energy_level: parseInt(e.target.value) })
+                  dispatch(setCoreLogs({ ...coreLogs, energy_level: parseInt(e.target.value) }))
                 }
               />
               <Form.Text>{coreLogs.energy_level}/10</Form.Text>
@@ -137,13 +100,13 @@ export default function ManualLogModal({ show, onHide, userId }) {
                 type="number"
                 value={coreLogs.sleep_log.sleep_hours}
                 onChange={(e) =>
-                  setCoreLogs({
+                  dispatch(setCoreLogs({
                     ...coreLogs,
                     sleep_log: {
                       ...coreLogs.sleep_log,
                       sleep_hours: parseInt(e.target.value),
                     },
-                  })
+                  }))
                 }
               />
             </Form.Group>
@@ -155,13 +118,13 @@ export default function ManualLogModal({ show, onHide, userId }) {
                 max={10}
                 value={coreLogs.sleep_log.sleep_quality}
                 onChange={(e) =>
-                  setCoreLogs({
+                  dispatch(setCoreLogs({
                     ...coreLogs,
                     sleep_log: {
                       ...coreLogs.sleep_log,
                       sleep_quality: parseInt(e.target.value),
                     },
-                  })
+                  }))
                 }
               />
               <Form.Text>{coreLogs.sleep_log.sleep_quality}/10</Form.Text>
@@ -173,13 +136,13 @@ export default function ManualLogModal({ show, onHide, userId }) {
                 type="number"
                 value={coreLogs.sleep_log.night_awakenings}
                 onChange={(e) =>
-                  setCoreLogs({
+                  dispatch(setCoreLogs({
                     ...coreLogs,
                     sleep_log: {
                       ...coreLogs.sleep_log,
                       night_awakenings: parseInt(e.target.value),
                     },
-                  })
+                  }))
                 }
               />
             </Form.Group>
@@ -202,13 +165,13 @@ export default function ManualLogModal({ show, onHide, userId }) {
               <Form.Select
                 value={extendedLogs.lifestyle_factors.social_interaction_level}
                 onChange={(e) =>
-                  setExtendedLogs({
+                  dispatch(setExtendedLogs({
                     ...extendedLogs,
                     lifestyle_factors: {
                       ...extendedLogs.lifestyle_factors,
                       social_interaction_level: e.target.value,
                     },
-                  })
+                  }))
                 }
               >
                 <option value="">Select</option>
@@ -224,13 +187,13 @@ export default function ManualLogModal({ show, onHide, userId }) {
               <Form.Select
                 value={extendedLogs.lifestyle_factors.physical_activity_level}
                 onChange={(e) =>
-                  setExtendedLogs({
+                  dispatch(setExtendedLogs({
                     ...extendedLogs,
                     lifestyle_factors: {
                       ...extendedLogs.lifestyle_factors,
                       physical_activity_level: e.target.value,
                     },
-                  })
+                  }))
                 }
               >
                 <option value="">Select</option>
@@ -247,16 +210,99 @@ export default function ManualLogModal({ show, onHide, userId }) {
                 type="number"
                 value={extendedLogs.lifestyle_factors.screen_time_minutes}
                 onChange={(e) =>
-                  setExtendedLogs({
+                  dispatch(setExtendedLogs({
                     ...extendedLogs,
                     lifestyle_factors: {
                       ...extendedLogs.lifestyle_factors,
                       screen_time_minutes: parseInt(e.target.value),
                     },
-                  })
+                  }))
                 }
               />
             </Form.Group>
+
+            {/* Mood-Influencing Factors Section */}
+            <Accordion className="mt-3">
+              <Accordion.Item eventKey="3">
+                <Accordion.Header>🧠 Mood-Influencing Factors</Accordion.Header>
+                <Accordion.Body>
+                  {/* Substance-related */}
+                  <Form.Group className="mb-3">
+                    <Form.Label>🍷 Did you use anything (like alcohol or cannabis) that might’ve affected your mood or sleep?</Form.Label>
+                    <div>
+                      <Form.Check
+                        inline
+                        type="radio"
+                        label="Yes"
+                        name="substanceUse"
+                        checked={extendedLogs.lifestyle_factors.substance_use === true}
+                        onChange={() =>
+                          dispatch(setExtendedLogs({
+                            ...extendedLogs,
+                            lifestyle_factors: {
+                              ...extendedLogs.lifestyle_factors,
+                              substance_use: true,
+                            },
+                          }))
+                        }
+                      />
+                      <Form.Check
+                        inline
+                        type="radio"
+                        label="No"
+                        name="substanceUse"
+                        checked={extendedLogs.lifestyle_factors.substance_use === false}
+                        onChange={() =>
+                          dispatch(setExtendedLogs({
+                            ...extendedLogs,
+                            lifestyle_factors: {
+                              ...extendedLogs.lifestyle_factors,
+                              substance_use: false,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                  </Form.Group>
+
+                  {/* Unusual experiences */}
+                  <Form.Group>
+                    <Form.Label>🧠 Did you notice anything that felt unusual — like hearing or seeing something others didn’t?</Form.Label>
+                    <Form.Text muted>
+                      (Totally optional — this helps track your overall clarity and experience.)
+                    </Form.Text>
+                    <div className="mt-1">
+                      <Form.Check
+                        inline
+                        type="radio"
+                        label="Yes"
+                        name="unusualExperiences"
+                        checked={extendedLogs.psychotic_symptoms === true}
+                        onChange={() =>
+                          dispatch(setExtendedLogs({
+                            ...extendedLogs,
+                            psychotic_symptoms: true,
+                          }))
+                        }
+                      />
+                      <Form.Check
+                        inline
+                        type="radio"
+                        label="No"
+                        name="unusualExperiences"
+                        checked={extendedLogs.psychotic_symptoms === false}
+                        onChange={() =>
+                          dispatch(setExtendedLogs({
+                            ...extendedLogs,
+                            psychotic_symptoms: false,
+                          }))
+                        }
+                      />
+                    </div>
+                  </Form.Group>
+                </Accordion.Body>
+              </Accordion.Item>
+            </Accordion>
 
             <div className="mt-3 d-flex justify-content-between">
               <Button variant="secondary" onClick={() => setStep(2)}>
@@ -282,7 +328,7 @@ export default function ManualLogModal({ show, onHide, userId }) {
                   id="medicationYes"
                   checked={coreLogs.medication_taken === true}
                   onChange={() =>
-                    setCoreLogs({ ...coreLogs, medication_taken: true })
+                    dispatch(setCoreLogs({ ...coreLogs, medication_taken: true }))
                   }
                 />
                 <Form.Check
@@ -293,7 +339,7 @@ export default function ManualLogModal({ show, onHide, userId }) {
                   id="medicationNo"
                   checked={coreLogs.medication_taken === false}
                   onChange={() =>
-                    setCoreLogs({ ...coreLogs, medication_taken: false })
+                    dispatch(setCoreLogs({ ...coreLogs, medication_taken: false }))
                   }
                 />
               </div>
@@ -308,10 +354,10 @@ export default function ManualLogModal({ show, onHide, userId }) {
                     placeholder="E.g., new dosage, side effects, skipped dose yesterday..."
                     value={extendedLogs.medication_details}
                     onChange={(e) =>
-                      setExtendedLogs({
+                      dispatch(setExtendedLogs({
                         ...extendedLogs,
                         medication_details: e.target.value,
-                      })
+                      }))
                     }
                   />
                 </Form.Group>
@@ -326,7 +372,7 @@ export default function ManualLogModal({ show, onHide, userId }) {
                 placeholder="Write anything you’d like to reflect on…"
                 value={coreLogs.journal}
                 onChange={(e) =>
-                  setCoreLogs({ ...coreLogs, journal: e.target.value })
+                  dispatch(setCoreLogs({ ...coreLogs, journal: e.target.value }))
                 }
               />
             </Form.Group>
@@ -338,7 +384,7 @@ export default function ManualLogModal({ show, onHide, userId }) {
                 placeholder="What made you smile today?"
                 value={extendedLogs.gratitude_entry}
                 onChange={(e) =>
-                  setExtendedLogs({ ...extendedLogs, gratitude_entry: e.target.value })
+                  dispatch(setExtendedLogs({ ...extendedLogs, gratitude_entry: e.target.value }))
                 }
               />
             </Form.Group>

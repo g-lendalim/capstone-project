@@ -1,12 +1,11 @@
 import { Form } from 'react-bootstrap';
+import { useDispatch, useSelector } from "react-redux";
+import { setCoreLogs, setExtendedLogs } from "../features/logs/logsSlice";
 
-export default function MedicationLogForm({
-  coreLogs,
-  setCoreLogs,
-  extendedLogs,
-  setExtendedLogs,
-  handleImageUpload,
-}) {
+export default function MedicationLogForm({ handleImageUpload }) {
+  const dispatch = useDispatch();
+  const { coreLogs, extendedLogs } = useSelector((state) => state.logs);
+
   return (
     <>
       <Form.Group className="mb-3">
@@ -15,7 +14,7 @@ export default function MedicationLogForm({
           label="✅ I took my medication"
           checked={coreLogs.medication_taken}
           onChange={(e) =>
-            setCoreLogs({ ...coreLogs, medication_taken: e.target.checked })
+            dispatch(setCoreLogs({ ...coreLogs, medication_taken: e.target.checked }))
           }
         />
       </Form.Group>
@@ -29,10 +28,10 @@ export default function MedicationLogForm({
               placeholder="E.g., new dosage, side effects, skipped dose yesterday..."
               value={extendedLogs.medication_details}
               onChange={(e) =>
-                setExtendedLogs({
+                dispatch(setExtendedLogs({
                   ...extendedLogs,
                   medication_details: e.target.value,
-                })
+                }))
               }
             />
           </Form.Group>
@@ -51,10 +50,10 @@ export default function MedicationLogForm({
                 const file = e.target.files[0];
                 if (file) {
                   const url = await handleImageUpload(file);
-                  setExtendedLogs((prev) => ({
+                  dispatch(setExtendedLogs((prev) => ({
                     ...prev,
                     image_url: url,
-                  }));
+                  })));
                 }
               }}
             />
