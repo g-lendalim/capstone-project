@@ -1,0 +1,185 @@
+/* Grounding Techniques */
+
+.breath-box {
+    width: 180px;
+    height: 180px;
+    border: 3px solid #3db4e6;
+    border-radius: 12px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 1s ease-in-out;
+    background-color: #eef7fa;
+    box-shadow: 0 0 20px rgba(126, 200, 227, 0.6);
+    position: relative;
+}
+
+.inhale {
+    transform: scale(1.0);
+    background-color: #d0f0fa;
+    border-color: #5bc0de;
+}
+
+.exhale {
+    transform: scale(0.8);
+    background-color: #f5faff;
+    border-color: #3db4e6;
+}
+
+.hold-big {
+    transform: scale(1.0);
+    background-color: #e6f7fb;
+    border-color: #5bc0de;
+}
+
+.hold-small {
+    transform: scale(0.8);
+    background-color: #e6f7fb;
+    border-color: #3db4e6;
+}
+
+.breath-text {
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: #145374;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+}
+
+.breath-count {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 0.75rem;
+    color: #5bc0de;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.breath-instruction {
+    display: flex;
+    justify-content: space-between;
+    max-width: 320px;
+    width: 100%;
+}
+
+.breath-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #6c757d;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.breath-step.active {
+    color: #0d6efd;
+    transform: translateY(-5px);
+    font-weight: 600;
+}
+
+.breath-step i {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.grounding-progress {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 auto 1.5rem;
+    max-width: 200px;
+}
+
+.progress-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #dee2e6;
+    position: relative;
+}
+
+.progress-dot::after {
+    content: "";
+    position: absolute;
+    height: 2px;
+    background-color: #dee2e6;
+    width: 100%;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+}
+
+.progress-dot:last-child::after {
+    display: none;
+}
+
+.progress-dot.completed {
+    background-color: #28a745;
+}
+
+.progress-dot.completed::after {
+    background-color: #28a745;
+}
+
+.progress-dot.current {
+    background-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.grounding-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.grounding-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #007bff;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.grounding-prompt {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.progress-notification {
+    position: relative;
+    margin-top: 1rem;
+}
+
+.relief-icon {
+    background-color: rgba(0, 123, 255, 0.1);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.relief-icon .bi-snow {
+    color: #17a2b8;
+}
+
+.relief-icon .bi-tree-fill {
+    color: #28a745;
+}
+
+.relief-icon .bi-music-note-beamed {
+    color: #dc3545;
+}
