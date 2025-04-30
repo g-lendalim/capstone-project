@@ -5,7 +5,7 @@ import { storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useSelector, useDispatch } from "react-redux";
 import { resetLogs, saveLog, setCoreLogs, setExtendedLogs } from "../features/logs/logsSlice";
-import { getMoodEmoji, getMoodLabel, getEnergyEmoji, getEnergyLabel, getSleepQualityEmoji, getSleepQualityLabel } from "../hooks/logLabels";
+import { getMoodEmoji, getMoodLabel, getEnergyEmoji, getEnergyLabel, getAnxietyEmoji, getAnxietyLabel, getStressEmoji, getStressLabel, getIrritabilityEmoji, getIrritabilityLabel, getSleepQualityEmoji, getSleepQualityLabel } from "../hooks/logLabels";
 
 export default function WelcomeLogModal({ show, onHide, userId, currentMood, setCurrentMood }) {
     const [step, setStep] = useState(1);
