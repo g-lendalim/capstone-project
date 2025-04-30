@@ -1,19 +1,27 @@
-import { useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
-export default function useAlarm(alarmTime, callback, reminderTime = null, disabled = false) {
+export default function useAlarm(alarmTime, callback, reminderTime = null, isDisabled) {
   const isRinging = useRef(false);
 
   useEffect(() => {
-    if (disabled || isRinging.current) return;
-    
+    if (isDisabled || isRinging.current) return;
+
     const now = new Date();
-    const targetTime = new Date(reminderTime || alarmTime);
-    
+
+    let targetTime;
+    try {
+      targetTime = reminderTime ? new Date(reminderTime) :
+        (alarmTime instanceof Date ? alarmTime : new Date(alarmTime));
+    } catch (error) {
+      console.warn('Error parsing date:', error);
+      return;
+    }
+
     console.log('Alarm Time:', alarmTime);
     console.log('Reminder Time:', reminderTime);
     console.log('Target Time:', targetTime);
 
-    if (isNaN(targetTime)) {
+    if (isNaN(targetTime.getTime())) {
       console.warn('Invalid alarm/reminder time:', reminderTime || alarmTime);
       return;
     }
@@ -21,22 +29,18 @@ export default function useAlarm(alarmTime, callback, reminderTime = null, disab
     const delay = targetTime.getTime() - now.getTime();
 
     if (delay <= 0) {
-      // If it's already time or past due, trigger immediately
       callback();
       isRinging.current = true;
       return;
     }
 
     const timer = setTimeout(() => {
-      if (!isRinging.current && !disabled) {
+      if (!isRinging.current && !isDisabled) {
         callback();
         isRinging.current = true;
       }
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [alarmTime, callback, reminderTime, disabled]);
-};
-
-
-
+  }, [alarmTime, callback, reminderTime, isDisabled]);
+}

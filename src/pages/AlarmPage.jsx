@@ -1,38 +1,39 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Button, Card, Row, Col } from 'react-bootstrap';
+import { Button, Card, Container } from 'react-bootstrap';
 import api from '../api';
 import { AuthContext } from "../components/AuthProvider";
 import AlarmFormModal from '../components/AlarmFormModal';
 import LogPromptModal from '../components/LogPromptModal';
 import AlarmCard from '../components/AlarmCard';
+import { alarmThemes } from '../hooks/alarmThemes';
 
 export default function AlarmPage() {
   const { currentUser } = useContext(AuthContext);
-
   const [alarms, setAlarms] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ type: '', time: '', label: '', checklist: [] });
+  const [formData, setFormData] = useState({ type: '', time: '', label: '', checklist: [], isEnabled: false });
   const [showCalendar, setShowCalendar] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
   const [showLogModal, setShowLogModal] = useState(false);
   const [currentAlarm, setCurrentAlarm] = useState(null);
-  const [dismissedAlarms, setDismissedAlarms] = useState({});
+  const [activeTab, setActiveTab] = useState('all');
 
   const defaultAlarmTypes = [
     { displayName: 'Rise & Shine', type: 'Morning' },
     { displayName: 'Time to Wind Down', type: 'Bedtime' },
-    { displayName: 'Therapy Time', type: 'Visit' },
+    { displayName: 'Therapy Time', type: 'Therapy' },
     { displayName: 'Pill Time', type: 'Medication' },
   ];
 
   useEffect(() => {
     const fetchAlarms = async () => {
-      if (currentUser.uid)
-      try {
-        const response = await api.get(`/alarms/user/${currentUser.uid}`);
-        setAlarms(response.data);
-      } catch (err) {
-        console.error('Error fetching alarms:', err);
+      if (currentUser?.uid) {
+        try {
+          const response = await api.get(`/alarms/user/${currentUser.uid}`);
+          setAlarms(response.data);
+        } catch (err) {
+          console.error('Error fetching alarms:', err);
+        }
       }
     };
 
@@ -78,52 +79,47 @@ export default function AlarmPage() {
 
   const handleSubmit = async () => {
     try {
-      if (formData.id) {
-        const response = await api.put(`/alarms/${formData.id}`, {
-          user_id: currentUser.uid,
-          ...formData,
-        });
-        setAlarms((prev) =>
-          prev.map((alarm) => (alarm.id === formData.id ? response.data : alarm))
-        );
-      } else {
-        const response = await api.post('/alarms', {
-          user_id: currentUser.uid,
-          ...formData,
-        });
+      const dataToSubmit = {
+        ...formData,
+        isEnabled: formData.isEnabled === true,
+        user_id: currentUser.uid,
+        reminder: formData.reminderTime ? new Date(formData.reminderTime).toISOString() : null,
+        sound_url: formData.sound_url || null,
+        date: formData.date || null
+      };
 
-        setAlarms((prev) => [...prev, response.data]);
+      if (formData.id) {
+        console.log('Updating alarm with data:', dataToSubmit);
+        const response = await api.put(`/alarms/${formData.id}`, dataToSubmit);
+
+        if (response && response.data) {
+          setAlarms((prev) =>
+            prev.map((alarm) => (alarm.id === formData.id ? response.data : alarm))
+          );
+        } else {
+          console.error('Invalid response from server when updating alarm');
+        }
+      } else {
+        console.log('Creating new alarm with data:', dataToSubmit);
+        const response = await api.post('/alarms', dataToSubmit);
+
+        if (response && response.data) {
+          setAlarms((prev) => [...prev, response.data]);
+        } else {
+          console.error('Invalid response from server when creating alarm');
+        }
       }
       setShowModal(false);
-      setFormData({ type: '', time: '', label: '', checklist: [] });
+      setFormData({ type: '', time: '', label: '', checklist: [], isEnabled: false });
     } catch (err) {
       console.error('Error saving alarm:', err);
     }
   };
 
-  const groupAlarmsByType = (alarms) => {
-    const grouped = {};
-
-    alarms.forEach((alarm) => {
-      const type = alarm.type;
-      if (!grouped[type]) {
-        grouped[type] = [];
-      }
-      grouped[type].push(alarm);
-    });
-
-    defaultAlarmTypes.forEach(({ type }) => {
-      if (!grouped[type]) {
-        grouped[type] = [];
-      }
-    });
-
-    return grouped;
-  };
-
-  const groupedAlarms = groupAlarmsByType(alarms);
-
   const handleDelete = async (id) => {
+    const confirmed = window.confirm("Are you sure you want to delete this alarm?");
+    if (!confirmed) return;
+
     try {
       await api.delete(`/alarms/${id}`);
       setAlarms((prev) => prev.filter((alarm) => alarm.id !== id));
@@ -133,74 +129,194 @@ export default function AlarmPage() {
   };
 
   const handleEdit = (alarm) => {
-    setFormData(alarm);
+    setFormData({ ...alarm, isEnabled: alarm.isEnabled === true });
     setShowModal(true);
   };
 
-  const handleAlarmRing = (alarm) => {
-    console.log(`Alarm "${alarm.label}" is ringing!`);
-    setCurrentAlarm(alarm);
-    setShowLogModal(true); 
-  };
-
   const dismissAlarm = (alarmId) => {
-    setDismissedAlarms(prev => ({ ...prev, [alarmId]: true }));
-    setShowLogModal(false); 
-  };  
+    handleToggle(alarmId, false);
+    setShowLogModal(false);
+  };
 
   const handleReminder = (selectedDateTime, hoursBefore) => {
     const reminderTime = new Date(selectedDateTime);
     reminderTime.setHours(reminderTime.getHours() - hoursBefore);
-  
+
     setFormData((prev) => ({
       ...prev,
-      reminderTime: reminderTime.toISOString(), // Store the reminder time in ISO format
+      reminderTime: reminderTime.toISOString(),
     }));
   };
 
-  return (
-    <div className="container mt-5">
-      <h2 className="mb-4">⏰ Manage Alarms</h2>
-      <Row className="mb-4">
-        {defaultAlarmTypes.map(({ displayName, type }) => (
-          <Col key={type} md={6} lg={3} className="mb-4">
-            <Card className="h-100 shadow-sm">
-              <Card.Body>
-                <Card.Title className="d-flex justify-content-between align-items-center">
-                  {displayName}
-                </Card.Title>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    handleTypeChange(type);
-                    setShowModal(true);
-                  }}
-                >
-                  <i className="bi bi-plus-lg"></i> Add New Alarm
-                </Button>
+  const handleToggle = async (alarmId, isEnabled) => {
+    try {
+      const currentAlarm = alarms.find(alarm => alarm.id === alarmId);
+      if (!currentAlarm) {
+        console.error('Alarm not found:', alarmId);
+        return;
+      }
 
-                {groupedAlarms[type].length === 0 ? (
-                  <p className="text-muted mt-2">No alarms set</p>
-                ) : (
-                  groupedAlarms[type].map((alarm) => (
+      const dataToSubmit = {
+        ...currentAlarm,
+        isEnabled: isEnabled,
+        checklist: Array.isArray(currentAlarm.checklist) ? currentAlarm.checklist : [],
+        sound_url: currentAlarm.sound_url || null,
+        date: currentAlarm.date || null,
+        reminderTime: currentAlarm.reminderTime || null,
+        time: currentAlarm.time
+      };
+      console.log('Updating alarm toggle state:', dataToSubmit);
+
+      const response = await api.put(`/alarms/${alarmId}`, dataToSubmit);
+
+      if (!response || !response.data) {
+        console.error('No response data from server');
+        return;
+      }
+
+      setAlarms(prev =>
+        prev.map(alarm =>
+          alarm.id === alarmId ? { ...alarm, isEnabled } : alarm
+        )
+      );
+    } catch (err) {
+      console.error('Error toggling alarm:', err);
+    }
+  };
+
+  const filteredAlarms = activeTab === 'all'
+    ? alarms
+    : alarms.filter(alarm => alarm.type === activeTab);
+
+  return (
+    <Container className="py-5">
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <h1 className="fw-bold">
+          <span className="me-2">⏰</span>
+          My Reminders
+        </h1>
+        <Button
+          variant="primary"
+          className="rounded-pill px-3 py-2"
+          onClick={() => {
+            setFormData({ type: '', time: '', label: '', checklist: [], isEnabled: false });
+            setShowModal(true);
+          }}
+        >
+          <i className="bi bi-plus-lg me-2"></i>
+          New Reminder
+        </Button>
+      </div>
+
+      {/* Type Filter Tabs */}
+      <div className="mb-4">
+        <ul className="nav nav-pills nav-fill">
+          <li className="nav-item">
+            <button
+              className={`nav-link ${activeTab === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveTab('all')}
+            >
+              All Reminders
+            </button>
+          </li>
+          {defaultAlarmTypes.map(({ type }) => (
+            <li className="nav-item" key={type}>
+              <button
+                className={`nav-link ${activeTab === type ? 'active' : ''}`}
+                style={{
+                  backgroundColor: activeTab === type ? alarmThemes[type].buttonBg : 'transparent',
+                  color: activeTab === type ? alarmThemes[type].buttonText : ''
+                }}
+                onClick={() => setActiveTab(type)}
+              >
+                {alarmThemes[type].icon} {type}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+
+
+      {filteredAlarms.length === 0 ? (
+        <Card className="text-center p-5 shadow-sm">
+          <div className="py-5">
+            <div style={{ fontSize: '3rem', opacity: 0.5 }}>⏰</div>
+            <h4>No reminders to show</h4>
+            <p className="text-muted">Create your first reminder to get started</p>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setFormData({ type: '', time: '', label: '', checklist: [], isEnabled: false });
+                setShowModal(true);
+              }}
+            >
+              <i className="bi bi-plus-lg me-2"></i>
+              Create Reminder
+            </Button>
+          </div>
+        </Card>
+      ) :
+        activeTab === 'all' ? (
+          <>
+            {defaultAlarmTypes.map(({ type }) => {
+              const typeAlarms = alarms.filter(alarm => alarm.type === type);
+              if (typeAlarms.length === 0) return null;
+
+              return (
+                <div key={type} className="pb-5">
+                  <div className="d-flex align-items-center mb-3">
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        background: alarmThemes[type].gradient,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: '10px'
+                      }}
+                    >
+                      {alarmThemes[type].icon}
+                    </div>
+                    <h4 className="m-0">{type}</h4>
+                  </div>
+
+                  {typeAlarms.map((alarm) => (
                     <AlarmCard
                       key={alarm.id}
                       alarm={alarm}
                       handleEdit={handleEdit}
                       handleDelete={handleDelete}
-                      handleAlarmRing={handleAlarmRing}
                       checkedItems={checkedItems}
                       handleCheck={handleCheck}
-                      disabled={dismissedAlarms[alarm.id]}
+                      handleToggle={handleToggle}
+                      setCurrentAlarm={setCurrentAlarm}
+                      setShowLogModal={setShowLogModal}
                     />
-                  ))
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+                  ))}
+                </div>
+              );
+            })}
+          </>
+        ) : (
+          <div className='pb-5'>
+            {filteredAlarms.map((alarm) => (
+              <AlarmCard
+                key={alarm.id}
+                alarm={{ ...alarm }}
+                handleEdit={handleEdit}
+                handleDelete={handleDelete}
+                checkedItems={checkedItems}
+                handleCheck={handleCheck}
+                handleToggle={handleToggle}
+                setCurrentAlarm={setCurrentAlarm}
+                setShowLogModal={setShowLogModal}
+              />
+            ))}
+          </div>
+        )}
 
       <AlarmFormModal
         show={showModal}
@@ -221,9 +337,9 @@ export default function AlarmPage() {
         show={showLogModal}
         onHide={() => setShowLogModal(false)}
         alarm={currentAlarm}
-        userId={currentUser.uid}
+        userId={currentUser?.uid}
         dismissAlarm={dismissAlarm}
       />
-    </div>
+    </Container>
   );
 }

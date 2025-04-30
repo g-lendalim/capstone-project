@@ -1,5 +1,5 @@
 import React from 'react';
-import { OverlayTrigger, Tooltip, Row, Col, Modal, Button, Form } from 'react-bootstrap';
+import { Row, Col, Modal, Button, Form } from 'react-bootstrap';
 
 export default function AlarmFormModal({
   show,
@@ -15,31 +15,67 @@ export default function AlarmFormModal({
   showCalendar,
   setShowCalendar,
 }) {
+  const safeFormData = {
+    id: formData.id || '',
+    type: formData.type || '',
+    time: formData.time || '',
+    date: formData.date || '',
+    label: formData.label || '',
+    reminder: formData.reminder || '',
+    checklist: Array.isArray(formData.checklist) ? formData.checklist : [],
+    isEnabled: formData.isEnabled !== undefined ? formData.isEnabled : true,
+  };
+
   const handleReminderChange = (e) => {
     const value = e.target.value;
-    handleFormChange(e); // Update the form data
+    handleFormChange(e);
+    setTimeout(() => {
+      if (value && formData.date && formData.time) {
+        const hoursBefore = parseInt(value.split(' ')[0]);
+        const dateTimeStr = `${formData.date}T${formData.time}:00`;
+        const selectedDateTime = new Date(dateTimeStr);
 
-    if (value && formData.date && formData.time) {
-      const hoursBefore = parseInt(value.split(' ')[0]); 
-      const selectedDateTime = new Date(`${formData.date}T${formData.time}`);
-      if (!isNaN(selectedDateTime)) {
-        handleReminder(selectedDateTime, hoursBefore);
-      } else {
-        console.warn('Invalid date/time for reminder calculation.');
+        if (!isNaN(selectedDateTime.getTime())) {
+          const reminderTime = new Date(selectedDateTime);
+          reminderTime.setHours(reminderTime.getHours() - hoursBefore);
+          handleReminder(selectedDateTime, hoursBefore);
+        } else {
+          console.warn('Invalid date/time for reminder calculation:', dateTimeStr);
+        }
       }
-    }
+    }, 0);
+  };
+
+  const handleTimeChange = (e) => {
+    const timeValue = e.target.value || '';
+    handleFormChange({
+      target: {
+        name: 'time',
+        value: timeValue
+      }
+    });
+  };
+
+  const handleDateChange = (e) => {
+    const dateValue = e.target.value || '';
+    handleFormChange({
+      target: {
+        name: 'date',
+        value: dateValue
+      }
+    });
   };
 
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton style={{ backgroundColor: '#e6e6fa', color: '#4b0082' }}>
         <Modal.Title className="text-center w-100">
-          {formData.id ? 'Edit Your Alarm' : 'Create a New Alarm'}
+          {safeFormData.id ? 'Edit Your Alarm' : 'Create a New Alarm'}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body style={{ backgroundColor: '#f8f8ff' }}>
         <p className="text-center mb-4" style={{ color: '#4b0082' }}>
-          {formData.id
+          {safeFormData.id
             ? 'Update your alarm to stay on track with your mental health goals.'
             : 'Create a personalized alarm to support your mental health routine.'}
         </p>
@@ -49,13 +85,14 @@ export default function AlarmFormModal({
             <Form.Control
               as="select"
               name="type"
-              value={formData.type}
+              value={safeFormData.type}
               onChange={(e) => handleTypeChange(e.target.value)}
               style={{ borderColor: '#4b0082' }}
             >
+              <option value="">Select type</option>
               <option value="Morning">Rise & Shine</option>
               <option value="Bedtime">Time to Wind Down</option>
-              <option value="Visit">Therapy Time</option>
+              <option value="Therapy">Therapy Time</option>
               <option value="Medication">Pill Time</option>
             </Form.Control>
           </Form.Group>
@@ -65,18 +102,18 @@ export default function AlarmFormModal({
             <Form.Control
               type="text"
               name="label"
-              value={formData.label}
+              value={safeFormData.label}
               onChange={handleFormChange}
               placeholder={
-                formData.type === 'Morning'
+                safeFormData.type === 'Morning'
                   ? 'Begin with Purpose'
-                  : formData.type === 'Bedtime'
-                  ? 'Rest and Recharge'
-                  : formData.type === 'Visit'
-                  ? 'Upcoming Appointment'
-                  : formData.type === 'Medication'
-                  ? 'Take Your Medication'
-                  : ''
+                  : safeFormData.type === 'Bedtime'
+                    ? 'Rest and Recharge'
+                    : safeFormData.type === 'Therapy'
+                      ? 'Upcoming Appointment'
+                      : safeFormData.type === 'Medication'
+                        ? 'Take Your Medication'
+                        : ''
               }
               style={{ borderColor: '#4b0082' }}
             />
@@ -84,17 +121,17 @@ export default function AlarmFormModal({
 
           <Form.Group className="mt-3">
             <Form.Label style={{ color: '#4b0082' }}>
-              {formData.type === 'Visit' ? 'Set Date and Time' : 'Set Time'}
+              {safeFormData.type === 'Therapy' ? 'Set Date and Time' : 'Set Time'}
             </Form.Label>
 
-            {formData.type === 'Visit' ? (
+            {safeFormData.type === 'Therapy' ? (
               <Row className="g-2">
                 <Col xs={5}>
                   <Form.Control
                     type="date"
                     name="date"
-                    value={formData.date}
-                    onChange={handleFormChange}
+                    value={safeFormData.date}
+                    onChange={handleDateChange}
                     style={{ borderColor: '#4b0082' }}
                   />
                 </Col>
@@ -102,8 +139,8 @@ export default function AlarmFormModal({
                   <Form.Control
                     type="time"
                     name="time"
-                    value={formData.time}
-                    onChange={handleFormChange}
+                    value={safeFormData.time}
+                    onChange={handleTimeChange}
                     style={{ borderColor: '#4b0082' }}
                   />
                 </Col>
@@ -112,39 +149,41 @@ export default function AlarmFormModal({
               <Form.Control
                 type="time"
                 name="time"
-                value={formData.time}
-                onChange={handleFormChange}
+                value={safeFormData.time}
+                onChange={handleTimeChange}
                 style={{ borderColor: '#4b0082' }}
               />
             )}
           </Form.Group>
 
-          <Modal show={showCalendar} onHide={() => setShowCalendar(false)} centered>
-            <Modal.Header closeButton>
-              <Modal.Title>Select Date</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
+          {showCalendar && (
+            <div className="mt-3 p-3 border rounded">
+              <h6 style={{ color: '#4b0082' }}>Select Date</h6>
               <Form.Control
                 type="date"
                 name="date"
-                value={formData.date}
-                onChange={handleFormChange}
+                value={safeFormData.date}
+                onChange={handleDateChange}
               />
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowCalendar(false)}>
-                Close
-              </Button>
-            </Modal.Footer>
-          </Modal>
+              <div className="d-flex justify-content-end mt-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowCalendar(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
 
-          {formData.type === 'Visit' && (
+          {safeFormData.type === 'Therapy' && (
             <Form.Group className="mt-3">
               <Form.Label style={{ color: '#4b0082' }}>Set Reminder</Form.Label>
               <Form.Control
                 as="select"
                 name="reminder"
-                value={formData.reminder || ''}
+                value={safeFormData.reminder}
                 onChange={handleReminderChange}
                 style={{
                   borderColor: '#4b0082',
@@ -180,11 +219,11 @@ export default function AlarmFormModal({
             >
               <i className="bi bi-plus-circle"></i> Add Checklist
             </Button>
-            {formData.checklist.map((item, index) => (
+            {safeFormData.checklist.map((item, index) => (
               <div key={index} className="d-flex align-items-center mb-2">
                 <Form.Control
                   type="text"
-                  value={item}
+                  value={item || ''}
                   onChange={(e) => handleChecklistChange(index, e.target.value)}
                   style={{ borderColor: '#4b0082' }}
                   placeholder={`Checklist ${index + 1}`}
@@ -214,7 +253,7 @@ export default function AlarmFormModal({
           onClick={handleSubmit}
           style={{ backgroundColor: '#4b0082', color: 'white' }}
         >
-          {formData.id ? 'Update Alarm' : 'Save Alarm'}
+          {safeFormData.id ? 'Update Alarm' : 'Save Alarm'}
         </Button>
       </Modal.Footer>
     </Modal>
