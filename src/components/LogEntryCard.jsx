@@ -1,16 +1,11 @@
+import React from 'react';
 import { Col, Row, Card, Button, Accordion } from 'react-bootstrap';
 
+const isValid = (val) => val !== undefined && val !== null && val !== '' && !isNaN(Number(val === '' ? NaN : val));
+
 const MetricItem = ({ label, value, icon, formatter }) => {
-    if (value == null) {
-        return (
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <span className="text-muted">
-                    <i className={`bi ${icon} me-2`}></i>
-                    {label}
-                </span>
-                <span className="text-muted fst-italic small">Not recorded</span>
-            </div>
-        );
+    if (!isValid(value)) {
+        return null;
     }
 
     return formatter ? formatter(label, value, icon) : (
@@ -24,36 +19,50 @@ const MetricItem = ({ label, value, icon, formatter }) => {
     );
 };
 
-const MetricCard = ({ title, icon, iconColor, bgColor, borderColor, children }) => (
-    <div
-        className="mb-4 p-3 rounded"
-        style={{
-            backgroundColor: bgColor || 'rgba(240, 247, 255, 0.5)',
-            border: `1px solid ${borderColor || 'rgba(0, 0, 0, 0.05)'}`
-        }}
-    >
-        <h6 className="fw-bold mb-3">
-            <i className={`bi ${icon} me-2 ${iconColor}`}></i>
-            {title}
-        </h6>
-        {children}
-    </div>
-);
+const MetricCard = ({ title, icon, iconColor, bgColor, borderColor, children }) => {
+    const filteredChildren = React.Children.toArray(children).filter(child => child !== null);
 
-const JournalImage = ({ imageUrl }) => (
-    <div className="journal-image mb-4">
-        <img
-            src={imageUrl}
-            alt="Captured moment"
-            className="rounded shadow-sm img-fluid"
+    if (filteredChildren.length === 0) {
+        return null;
+    }
+
+    return (
+        <div
+            className="mb-4 p-3 rounded"
             style={{
-                width: "100%",
-                maxHeight: "300px",
-                objectFit: "contain"
+                backgroundColor: bgColor || 'rgba(240, 247, 255, 0.5)',
+                border: `1px solid ${borderColor || 'rgba(0, 0, 0, 0.05)'}`
             }}
-        />
-    </div>
-);
+        >
+            <h6 className="fw-bold mb-3">
+                <i className={`bi ${icon} me-2 ${iconColor}`}></i>
+                {title}
+            </h6>
+            {filteredChildren}
+        </div>
+    );
+};
+
+const JournalImage = ({ imageUrl }) => {
+    if (!imageUrl) {
+        return null;
+    }
+
+    return (
+        <div className="journal-image mb-4">
+            <img
+                src={imageUrl}
+                alt="Captured moment"
+                className="rounded shadow-sm img-fluid"
+                style={{
+                    width: "100%",
+                    maxHeight: "300px",
+                    objectFit: "contain"
+                }}
+            />
+        </div>
+    );
+};
 
 export default function LogEntryCard({
     entry,
@@ -69,79 +78,101 @@ export default function LogEntryCard({
     onDelete,
     isAccordionItem = false
 }) {
+    if (!entry) {
+        return null;
+    }
+
     const { formattedDate, formattedTime } = formatDateTime(entry.created_at);
 
-    const formatSleepAwakenings = (label, value) => (
-        <div className="d-flex justify-content-between align-items-center mb-3">
-            <span className="text-muted">
-                <i className="bi bi-eye-slash me-2"></i>
-                {label}
-            </span>
-            <span
-                className="px-2 py-1 rounded-pill small"
-                style={{
-                    background: value <= 1 ? 'rgba(40, 167, 69, 0.1)' : value <= 3 ? 'rgba(108, 117, 125, 0.1)' : 'rgba(255, 193, 7, 0.1)',
-                    color: value <= 1 ? '#28a745' : value <= 3 ? '#6c757d' : '#ffc107'
-                }}
-            >
-                {value === 0 ? "Slept through" : value === 1 ? "Woke once" : `Woke ${value} times`}
-            </span>
-        </div>
-    );
+    const formatSleepAwakenings = (label, value) => {
+        if (!isValid(value)) return null;
 
-    const formatScreenTime = (label, minutes) => (
-        <div className="d-flex justify-content-between align-items-center mb-3">
-            <span className="text-muted">
-                <i className="bi bi-phone me-2"></i>
-                {label}
-            </span>
-            <span
-                className="px-2 py-1 rounded-pill small"
-                style={{
-                    background: minutes <= 120 ? 'rgba(40, 167, 69, 0.1)' : minutes <= 300 ? 'rgba(108, 117, 125, 0.1)' : 'rgba(255, 193, 7, 0.1)',
-                    color: minutes <= 120 ? '#28a745' : minutes <= 300 ? '#6c757d' : '#ffc107'
-                }}
-            >
-                {Math.floor(minutes / 60)}h {minutes % 60}m
-            </span>
-        </div>
-    );
+        return (
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <span className="text-muted">
+                    <i className="bi bi-eye-slash me-2"></i>
+                    {label}
+                </span>
+                <span
+                    className="px-2 py-1 rounded-pill small"
+                    style={{
+                        background: value <= 1 ? 'rgba(40, 167, 69, 0.1)' : value <= 3 ? 'rgba(108, 117, 125, 0.1)' : 'rgba(255, 193, 7, 0.1)',
+                        color: value <= 1 ? '#28a745' : value <= 3 ? '#6c757d' : '#ffc107'
+                    }}
+                >
+                    {value === 0 ? "Slept through" : value === 1 ? "Woke once" : `Woke ${value} times`}
+                </span>
+            </div>
+        );
+    };
 
-    const formatMedication = (label, taken) => (
-        <div className="d-flex justify-content-between align-items-center mb-3">
-            <span className="text-muted">
-                <i className="bi bi-capsule me-2"></i>
-                {label}
-            </span>
-            <span
-                className="px-2 py-1 rounded-pill small"
-                style={{
-                    background: taken ? 'rgba(40, 167, 69, 0.1)' : 'rgba(255, 193, 7, 0.1)',
-                    color: taken ? '#28a745' : '#ffc107'
-                }}
-            >
-                {taken ? "✓ Taken as prescribed" : "Skipped today"}
-            </span>
-        </div>
-    );
+    const formatScreenTime = (label, minutes) => {
+        if (!isValid(minutes)) return null;
 
-    const formatSleepHours = (label, hours) => (
-        <div className="d-flex justify-content-between align-items-center mb-3">
-            <span className="text-muted">
-                <i className="bi bi-clock me-2"></i>
-                {label}
-            </span>
-            <span
-                className={`px-2 py-1 rounded-pill small ${hours >= 7 ? 'text-success' : hours >= 5 ? 'text-warning' : 'text-danger'
-                    }`}
-                style={{
-                    background: hours >= 7 ? 'rgba(40, 167, 69, 0.1)' : hours >= 5 ? 'rgba(255, 193, 7, 0.1)' : 'rgba(220, 53, 69, 0.1)'
-                }}
-            >
-                {hours} hours
-            </span>
-        </div>
-    );
+        return (
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <span className="text-muted">
+                    <i className="bi bi-phone me-2"></i>
+                    {label}
+                </span>
+                <span
+                    className="px-2 py-1 rounded-pill small"
+                    style={{
+                        background: minutes <= 120 ? 'rgba(40, 167, 69, 0.1)' : minutes <= 300 ? 'rgba(108, 117, 125, 0.1)' : 'rgba(255, 193, 7, 0.1)',
+                        color: minutes <= 120 ? '#28a745' : minutes <= 300 ? '#6c757d' : '#ffc107'
+                    }}
+                >
+                    {Math.floor(minutes / 60)}h {minutes % 60}m
+                </span>
+            </div>
+        );
+    };
+
+    const formatMedication = (label, taken) => {
+        if (taken === null || taken === undefined) {
+            return null;
+        }
+
+        return (
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <span className="text-muted">
+                    <i className="bi bi-capsule me-2"></i>
+                    {label}
+                </span>
+                <span
+                    className="px-2 py-1 rounded-pill small"
+                    style={{
+                        background: taken ? 'rgba(40, 167, 69, 0.1)' : 'rgba(255, 193, 7, 0.1)',
+                        color: taken ? '#28a745' : '#ffc107'
+                    }}
+                >
+                    {taken ? "✓ Taken" : "Skipped"}
+                </span>
+            </div>
+        );
+    };
+
+    const formatSleepHours = (label, hours) => {
+        if (!isValid(hours)) return null;
+
+        return (
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <span className="text-muted">
+                    <i className="bi bi-clock me-2"></i>
+                    {label}
+                </span>
+                <span
+                    className={`px-2 py-1 rounded-pill small ${hours >= 7 ? 'text-success' : hours >= 5 ? 'text-warning' : 'text-danger'
+                        }`}
+                    style={{
+                        background: hours >= 7 ? 'rgba(40, 167, 69, 0.1)' : hours >= 5 ? 'rgba(255, 193, 7, 0.1)' : 'rgba(220, 53, 69, 0.1)'
+                    }}
+                >
+                    {hours} hours
+                </span>
+            </div>
+        );
+    };
 
     const cardContent = (
         <>
@@ -150,7 +181,7 @@ export default function LogEntryCard({
                     <Col lg={12}>
                         <Row className="g-4">
                             <Col md={4}>
-                                {entry.mood != null && (
+                                {isValid(entry.mood) && (
                                     <div
                                         className="mb-4 p-3 rounded"
                                         style={{
@@ -174,32 +205,36 @@ export default function LogEntryCard({
                                     bgColor="rgba(230, 252, 245, 0.5)"
                                     borderColor="rgba(200, 240, 230, 0.8)"
                                 >
-                                    {entry.energy_level ? renderMetric("Energy level", entry.energy_level, "bi-battery-charging", "energy") : null}
-                                    {entry.anxiety_level ? renderMetric("Anxiety", entry.anxiety_level, "bi-heart-pulse", "anxiety") : null}
-                                    {entry.stress_level ? renderMetric("Stress", entry.stress_level, "bi-activity", "stress") : null}
-                                    {entry.irritability_level ? renderMetric("Irritability", entry.irritability_level, "bi-emoji-expressionless", "irritability") : null}
+                                    {isValid(entry.energy_level) && renderMetric("Energy level", entry.energy_level, "bi-battery-charging", "energy")}
+                                    {isValid(entry.anxiety_level) && renderMetric("Anxiety", entry.anxiety_level, "bi-heart-pulse", "anxiety")}
+                                    {isValid(entry.stress_level) && renderMetric("Stress", entry.stress_level, "bi-activity", "stress")}
+                                    {isValid(entry.irritability_level) && renderMetric("Irritability", entry.irritability_level, "bi-emoji-expressionless", "irritability")}
 
                                     <MetricItem
                                         label="Mental Clarity"
                                         value={entry.cognitive_clarity}
                                         icon="bi-lightbulb"
-                                        formatter={(label, value) => (
-                                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                                <span className="text-muted">
-                                                    <i className="bi bi-lightbulb me-2"></i>
-                                                    {label}
-                                                </span>
-                                                <span
-                                                    className={`px-2 py-1 rounded-pill small ${value ? "text-success" : "text-danger"}`}
-                                                >
-                                                    {value ? "Clear minded" : "Bit foggy"}
-                                                </span>
-                                            </div>
-                                        )}
+                                        formatter={(label, value) => {
+                                            if (value === null || value === undefined) return null;
+
+                                            return (
+                                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                                    <span className="text-muted">
+                                                        <i className="bi bi-lightbulb me-2"></i>
+                                                        {label}
+                                                    </span>
+                                                    <span
+                                                        className={`px-2 py-1 rounded-pill small ${value ? "text-success" : "text-danger"}`}
+                                                    >
+                                                        {value ? "Clear minded" : "Bit foggy"}
+                                                    </span>
+                                                </div>
+                                            );
+                                        }}
                                     />
                                 </MetricCard>
 
-                                {(entry.sleep_hours != null || entry.sleep_quality != null || entry.night_awakenings != null) && (
+                                {(isValid(entry.sleep_hours) || isValid(entry.sleep_quality) || isValid(entry.night_awakenings)) && (
                                     <MetricCard
                                         title="Rest & Recovery"
                                         icon="bi-moon-stars"
@@ -213,7 +248,7 @@ export default function LogEntryCard({
                                             icon="bi-clock"
                                             formatter={formatSleepHours}
                                         />
-                                        {renderMetric("Sleep Quality", entry.sleep_quality, "bi-stars", "sleep")}
+                                        {isValid(entry.sleep_quality) && renderMetric("Sleep Quality", entry.sleep_quality, "bi-stars", "sleep")}
                                         <MetricItem
                                             label="Night Awakenings"
                                             value={entry.night_awakenings}
@@ -225,39 +260,46 @@ export default function LogEntryCard({
                             </Col>
 
                             <Col md={4}>
-                                {(entry.medication_taken != null || entry.physical_activity_level || entry.screen_time_minutes != null || entry.social_interaction_level) && (
-                                    <MetricCard
-                                        title="Daily Activities"
-                                        icon="bi-calendar-check"
-                                        iconColor="text-info"
-                                        bgColor="rgba(255, 246, 230, 0.5)"
-                                        borderColor="rgba(252, 232, 205, 0.8)"
-                                        fontSize="10px"
-                                    >
-                                        <MetricItem
-                                            label="Medication"
-                                            value={entry.medication_taken != null ? entry.medication_taken : null}
-                                            icon="bi-capsule"
-                                            formatter={formatMedication}
-                                        />
-                                        <MetricItem
-                                            label="Physical Activity"
-                                            value={entry.physical_activity_level ? getPhysicalActivityLabel(entry.physical_activity_level) : null}
-                                            icon="bi-bicycle"
-                                        />
-                                        <MetricItem
-                                            label="Screen Time"
-                                            value={entry.screen_time_minutes}
-                                            icon="bi-phone"
-                                            formatter={formatScreenTime}
-                                        />
-                                        <MetricItem
-                                            label="Social Interaction"
-                                            value={entry.social_interaction_level ? getSocialInteractionLabel(entry.social_interaction_level) : null}
-                                            icon="bi-people"
-                                        />
-                                    </MetricCard>
-                                )}
+                                {(entry.medication_taken !== null ||
+                                    isValid(entry.physical_activity_level) ||
+                                    isValid(entry.screen_time_minutes) ||
+                                    isValid(entry.social_interaction_level)) && (
+                                        <MetricCard
+                                            title="Daily Activities"
+                                            icon="bi-calendar-check"
+                                            iconColor="text-info"
+                                            bgColor="rgba(255, 246, 230, 0.5)"
+                                            borderColor="rgba(252, 232, 205, 0.8)"
+                                            fontSize="10px"
+                                        >
+                                            <MetricItem
+                                                label="Medication"
+                                                value={entry.medication_taken}
+                                                icon="bi-capsule"
+                                                formatter={formatMedication}
+                                            />
+                                            {isValid(entry.physical_activity_level) && (
+                                                <MetricItem
+                                                    label="Physical Activity"
+                                                    value={getPhysicalActivityLabel(entry.physical_activity_level)}
+                                                    icon="bi-bicycle"
+                                                />
+                                            )}
+                                            <MetricItem
+                                                label="Screen Time"
+                                                value={entry.screen_time_minutes}
+                                                icon="bi-phone"
+                                                formatter={formatScreenTime}
+                                            />
+                                            {isValid(entry.social_interaction_level) && (
+                                                <MetricItem
+                                                    label="Social Interaction"
+                                                    value={getSocialInteractionLabel(entry.social_interaction_level)}
+                                                    icon="bi-people"
+                                                />
+                                            )}
+                                        </MetricCard>
+                                    )}
 
                                 {(entry.journal || entry.gratitude_entry) && (
                                     <MetricCard
@@ -367,7 +409,6 @@ export default function LogEntryCard({
                                     </MetricCard>
                                 )}
                             </Col>
-                            {/* Image display */}
                             {entry.image_url && (
                                 <Col md={4}>
                                     <JournalImage imageUrl={entry.image_url} />
@@ -418,10 +459,10 @@ export default function LogEntryCard({
                     <div className="d-flex justify-content-between align-items-center w-100 me-3">
                         <div className="d-flex align-items-center">
                             <div className="me-2" style={{ fontSize: "2rem" }}>
-                                {entry.mood != null ? getMoodEmoji(entry.mood) : "📝"}
+                                {isValid(entry.mood) ? getMoodEmoji(entry.mood) : "📝"}
                             </div>
                             <div className="me-3">
-                                {entry.mood != null && (
+                                {isValid(entry.mood) && (
                                     <span className="ms-2 px-2 py-1 rounded-pill small" style={{ backgroundColor: getMoodColor(entry.mood) }}>
                                         {getMoodLabel(entry.mood)}
                                     </span>
@@ -470,4 +511,4 @@ export default function LogEntryCard({
             {cardContent}
         </Card>
     );
-};
+}

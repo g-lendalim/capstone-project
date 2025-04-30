@@ -20,8 +20,8 @@ export default function ProfilePage() {
   }, [dispatch, userId]);
 
   const getScaleDescription = (value, type) => {
-    if (value === null || value === undefined) {
-      return "Not recorded";
+    if (value === null || value === undefined || isNaN(value)) {
+      return null;
     }
 
     switch (type) {
@@ -41,16 +41,8 @@ export default function ProfilePage() {
   };
 
   const renderMetric = (label, value, icon, type) => {
-    if (value === null || value === undefined) {
-      return (
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <span className="text-muted d-flex align-items-center">
-            <i className={`bi ${icon} me-2`}></i>
-            {label}
-          </span>
-          <span className="text-muted fst-italic small">Not yet recorded</span>
-        </div>
-      );
+    if (value === null || value === undefined || isNaN(Number(value))) {
+      return null;
     }
 
     let className, backgroundColor;
