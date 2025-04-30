@@ -107,8 +107,13 @@ export default function BedtimeLogForm({ handleImageUpload }) {
                                     <small className="text-muted">0</small>
                                     <small className="text-muted">10</small>
                                 </div>
-                                <div className="text-center text-muted small">
-                                    {extendedLogs.emotional_state?.anxiety_level || 0}/10
+                                <div className="text-center mt-3 mb-2">
+                                    <div style={{ fontSize: "1.2rem" }}>
+                                        {getAnxietyEmoji(extendedLogs.emotional_state.anxiety_level)} {getAnxietyLabel(extendedLogs.emotional_state.anxiety_level)}
+                                    </div>
+                                    <div className="text-muted small">
+                                        {extendedLogs.emotional_state.anxiety_level}/10
+                                    </div>
                                 </div>
                             </div>
                         </Form.Group>
@@ -137,12 +142,18 @@ export default function BedtimeLogForm({ handleImageUpload }) {
                                     <small className="text-muted">0</small>
                                     <small className="text-muted">10</small>
                                 </div>
-                                <div className="text-center text-muted small">
-                                    {extendedLogs.emotional_state?.irritability_level || 0}/10
+                                <div className="text-center mt-3 mb-2">
+                                    <div style={{ fontSize: "1.2rem" }}>
+                                        {getIrritabilityEmoji(extendedLogs.emotional_state.irritability_level)} {getIrritabilityLabel(extendedLogs.emotional_state.irritability_level)}
+                                    </div>
+                                    <div className="text-muted small">
+                                        {extendedLogs.emotional_state.irritability_level}/10
+                                    </div>
                                 </div>
                             </div>
                         </Form.Group>
 
+                        {/* Stress Level Tracker - Updated with emoji and label */}
                         <Form.Group className="mb-4">
                             <Form.Label className="fw-medium" style={{ color: "#ff922b" }}>
                                 <span style={{ fontSize: "18px", marginRight: "8px" }}>😓</span>
@@ -167,8 +178,13 @@ export default function BedtimeLogForm({ handleImageUpload }) {
                                     <small className="text-muted">0</small>
                                     <small className="text-muted">10</small>
                                 </div>
-                                <div className="text-center text-muted small">
-                                    {extendedLogs.emotional_state?.stress_level || 0}/10
+                                <div className="text-center mt-3 mb-2">
+                                    <div style={{ fontSize: "1.2rem" }}>
+                                        {getStressEmoji(extendedLogs.emotional_state.stress_level)} {getStressLabel(extendedLogs.emotional_state.stress_level)}
+                                    </div>
+                                    <div className="text-muted small">
+                                        {extendedLogs.emotional_state.stress_level}/10
+                                    </div>
                                 </div>
                             </div>
                         </Form.Group>

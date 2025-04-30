@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Tab, Tabs, Alert } from "react-bootstrap";
 import { storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getMoodEmoji, getMoodLabel, getEnergyEmoji, getEnergyLabel, getSleepQualityEmoji, getSleepQualityLabel } from "../hooks/logLabels";
+import { getMoodEmoji, getMoodLabel, getEnergyEmoji, getEnergyLabel, getAnxietyEmoji, getAnxietyLabel, getIrritabilityEmoji, getIrritabilityLabel, getStressEmoji, getStressLabel, getSleepQualityEmoji, getSleepQualityLabel } from "../hooks/logLabels";
 
 export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
   const [updatedLog, setUpdatedLog] = useState({ ...logData });
   const [activeTab, setActiveTab] = useState("core");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  
+
   useEffect(() => {
     if (show && logData) {
       setUpdatedLog({ ...logData });
@@ -30,7 +30,7 @@ export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
       await onUpdate(updatedLog.id, updatedLog, null);
     }
   };
-  
+
 
   const handleChange = (section, field, value) => {
     if (section) {
@@ -60,7 +60,7 @@ export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
             {successMessage}
           </Alert>
         )}
-        
+
         {errorMessage && (
           <Alert variant="danger" className="mb-3">
             {errorMessage}
@@ -125,6 +125,98 @@ export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
                   <div style={{ fontSize: "2rem" }}>{getEnergyEmoji(updatedLog.energy_level)}</div>
                   <div className="mt-1 fw-medium">{getEnergyLabel(updatedLog.energy_level)}</div>
                   <div className="text-muted small">{updatedLog.energy_level}/10</div>
+                </div>
+              </Form.Group>
+            </div>
+          </Tab>
+
+          <Tab eventKey="mind" title="Mind & Body">
+            <div className="p-2">
+              <Form.Group className="mb-4">
+                <Form.Label className="fw-medium" style={{ color: "#4c6ef5" }}>
+                  <span style={{ fontSize: "18px", marginRight: "8px" }}>😰</span>
+                  How anxious are you feeling?
+                </Form.Label>
+                <div className="position-relative mb-2">
+                  <Form.Range
+                    min={0}
+                    max={10}
+                    value={updatedLog.anxiety_level || 0}
+                    onChange={(e) =>
+                      handleChange(null, "anxiety_level", parseInt(e.target.value))
+                    }
+                  />
+                  <div className="d-flex justify-content-between mb-2">
+                    <small className="text-muted">0</small>
+                    <small className="text-muted">10</small>
+                  </div>
+                  <div className="text-center mt-3 mb-2">
+                    <div style={{ fontSize: "1.2rem" }}>
+                      {getAnxietyEmoji(updatedLog.anxiety_level)} {getAnxietyLabel(updatedLog.anxiety_level)}
+                    </div>
+                    <div className="text-muted small">
+                      {updatedLog.anxiety_level}/10
+                    </div>
+                  </div>
+                </div>
+              </Form.Group>
+
+              <Form.Group className="mb-4">
+                <Form.Label className="fw-medium" style={{ color: "#f06595" }}>
+                  <span style={{ fontSize: "18px", marginRight: "8px" }}>😤</span>
+                  How irritable are you feeling?
+                </Form.Label>
+                <div className="position-relative mb-2">
+                  <Form.Range
+                    min={0}
+                    max={10}
+                    value={updatedLog.irritability_level || 0}
+                    onChange={(e) =>
+                      handleChange(null, "irritability_level", parseInt(e.target.value))
+                    }
+                  />
+                  <div className="d-flex justify-content-between mb-2">
+                    <small className="text-muted">0</small>
+                    <small className="text-muted">10</small>
+                  </div>
+                  <div className="text-center mt-3 mb-2">
+                    <div style={{ fontSize: "1.2rem" }}>
+                      {getIrritabilityEmoji(updatedLog.irritability_level)} {getIrritabilityLabel(updatedLog.irritability_level)}
+                    </div>
+                    <div className="text-muted small">
+                      {updatedLog.irritability_level}/10
+                    </div>
+                  </div>
+                </div>
+              </Form.Group>
+
+              {/* Stress Level Tracker - Updated with emoji and label */}
+              <Form.Group className="mb-4">
+                <Form.Label className="fw-medium" style={{ color: "#ff922b" }}>
+                  <span style={{ fontSize: "18px", marginRight: "8px" }}>😓</span>
+                  How stressed are you feeling?
+                </Form.Label>
+                <div className="position-relative mb-2">
+                  <Form.Range
+                    min={0}
+                    max={10}
+                    value={updatedLog.stress_level || 0}
+                    onChange={(e) =>
+                      handleChange(null, "stress_level", parseInt(e.target.value))
+                    }
+                  />
+                  <div className="d-flex justify-content-between mb-2">
+                    <small className="text-muted">0</small>
+                    <small className="text-muted">10</small>
+                  </div>
+                  <div className="text-center mt-3 mb-2">
+                    <div style={{ fontSize: "1.2rem" }}>
+                      {getStressEmoji(updatedLog.stress_level)} {getStressLabel(updatedLog.stress_level)}
+                    </div>
+                    <div className="text-muted small">
+                      {updatedLog.stress_level}/10
+                    </div>
+                  </div>
                 </div>
               </Form.Group>
             </div>
@@ -211,8 +303,8 @@ export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
                     className="me-3"
                   />
                   <span style={{ color: updatedLog.cognitive_clarity ? "#4c6ef5" : "#6c757d" }}>
-                    {updatedLog.cognitive_clarity 
-                      ? "✨ Focused and mentally sharp" 
+                    {updatedLog.cognitive_clarity
+                      ? "✨ Focused and mentally sharp"
                       : "🌫️ Feeling a bit foggy today"}
                   </span>
                 </div>
@@ -232,8 +324,8 @@ export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
                     className="me-3"
                   />
                   <span style={{ color: updatedLog.negative_thoughts ? "#e03131" : "#2b8a3e" }}>
-                    {updatedLog.negative_thoughts 
-                      ? "🌧️ Noticing negative thought patterns" 
+                    {updatedLog.negative_thoughts
+                      ? "🌧️ Noticing negative thought patterns"
                       : "☀️ Mostly positive thoughts today"}
                   </span>
                 </div>
@@ -253,8 +345,8 @@ export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
                     className="me-3"
                   />
                   <span style={{ color: updatedLog.intrusive_thoughts ? "#9775fa" : "#495057" }}>
-                    {updatedLog.intrusive_thoughts 
-                      ? "🔄 Experienced thoughts that don't feel like mine" 
+                    {updatedLog.intrusive_thoughts
+                      ? "🔄 Experienced thoughts that don't feel like mine"
                       : "✅ No unwanted recurring thoughts"}
                   </span>
                 </div>
@@ -393,7 +485,7 @@ export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
                     onChange={() => handleChange(null, "psychotic_symptoms", false)}
                   />
                 </div>
-              </Form.Group> 
+              </Form.Group>
             </div>
           </Tab>
 
@@ -497,9 +589,9 @@ export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
                       alt="Log image"
                       style={{ maxWidth: "100%", maxHeight: "300px", borderRadius: "8px" }}
                     />
-                    <Button 
-                      variant="outline-danger" 
-                      size="sm" 
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
                       className="me-2"
                       onClick={() => setUpdatedLog({ ...updatedLog, image_url: "" })}
                     >
@@ -516,8 +608,8 @@ export default function UpdateLogModal({ show, onHide, logData, onUpdate }) {
         <Button variant="secondary" onClick={onHide}>
           Cancel
         </Button>
-        <Button 
-          style={{ backgroundColor: "#0080ff", borderColor: "#0080ff" }} 
+        <Button
+          style={{ backgroundColor: "#0080ff", borderColor: "#0080ff" }}
           onClick={handleSubmit}
         >Update
         </Button>
