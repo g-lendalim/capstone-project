@@ -5,8 +5,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { resetLogs, saveLog, setExtendedLogs } from "../features/logs/logsSlice";
 import MorningLogForm from "./MorningLogForm";
 import BedtimeLogForm from "./BedtimeLogForm";
-import MedicationLogForm from "./MedicationLogForm";
-import VisitLogForm from "./VisitLogForm";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 
@@ -22,23 +20,24 @@ export default function LogPromptModal({ show, onHide, alarm, userId, dismissAla
 
   const resetForm = () => {
     setStep(1);
-    dispatch(resetLogs()); 
+    dispatch(resetLogs());
   };
 
   const handleSubmit = async () => {
     const payload = {
       user_id: userId,
       alarm_type: alarm.type,
+      created_at: new Date().toISOString(),
       ...coreLogs,
       ...extendedLogs,
     };
 
     try {
-      console.log("🚀 Sending payload to backend:", payload); // Add detailed logging
+      console.log("🚀 Sending payload to backend:", payload);
       await dispatch(saveLog({ userId, logData: payload })).unwrap();
       return true;
     } catch (err) {
-      console.error("Log error", err.response?.data || err.message); // Log backend error details
+      console.error("Log error", err);
       return false;
     }
   };
@@ -62,7 +61,7 @@ export default function LogPromptModal({ show, onHide, alarm, userId, dismissAla
     navigate("/alarm");
   };
 
-  const handleImageUpload = async (file, dispatch, extendedLogs) => {
+  const handleImageUpload = async (file) => {
     const imageRef = ref(storage, `logs/${file.name}`);
     await uploadBytes(imageRef, file);
     const url = await getDownloadURL(imageRef);
@@ -73,22 +72,12 @@ export default function LogPromptModal({ show, onHide, alarm, userId, dismissAla
     <>
       {alarm.type === "Morning" && (
         <MorningLogForm
-          handleImageUpload={(file) => handleImageUpload(file, dispatch, extendedLogs)}
+          handleImageUpload={handleImageUpload}
         />
       )}
       {alarm.type === "Bedtime" && (
         <BedtimeLogForm
-          handleImageUpload={(file) => handleImageUpload(file, dispatch, extendedLogs)}
-        />
-      )}
-      {alarm.type === "Medication" && (
-        <MedicationLogForm
-          handleImageUpload={(file) => handleImageUpload(file, dispatch, extendedLogs)}
-        />
-      )}
-      {alarm.type === "Visit" && (
-        <VisitLogForm
-          handleImageUpload={(file) => handleImageUpload(file, dispatch, extendedLogs)}
+          handleImageUpload={handleImageUpload}
         />
       )}
     </>

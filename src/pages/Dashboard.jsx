@@ -12,7 +12,7 @@ import { getMoodEmoji, getMoodLabel } from '../hooks/logLabels';
 import services from '../hooks/support';
 import { AuthContext } from "../components/AuthProvider";
 import WelcomeModal from "../components/WelcomeModal";
-import ManualLogModal from "../components/ManualLogModal";
+import WelcomeLogModal from "../components/WelcomeLogModal";
 import DailyStreaksLog from '../components/DailyStreaksLog';
 import '../css/Dashboard.css';
 import api from "../api";
@@ -61,7 +61,7 @@ export default function Dashboard() {
     }
   }, [isProfileComplete]);
 
-  const handleManualLog = () => {
+  const handleWelcomeLogModal = () => {
     setShowModal(true);
   };
 
@@ -163,11 +163,11 @@ export default function Dashboard() {
             <Button
               variant="primary"
               className="px-4 rounded-pill mt-3"
-              onClick={handleManualLog}
+              onClick={handleWelcomeLogModal}
             >
               Check In
             </Button>
-            <ManualLogModal
+            <WelcomeLogModal
               show={showModal}
               onHide={() => setShowModal(false)}
               userId={currentUser?.uid}
