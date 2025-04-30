@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Container, Row, Col, Card, Button, Form, Badge, Alert, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { 
-  HeartFill, 
-  PlusCircle, 
-  EmojiSmile, 
-  MusicNoteBeamed, 
-  PeopleFill, 
-  TreeFill, 
-  BookHalf, 
+import {
+  HeartFill,
+  PlusCircle,
+  EmojiSmile,
+  MusicNoteBeamed,
+  PeopleFill,
+  TreeFill,
+  BookHalf,
   CupHotFill,
   XCircleFill,
   CheckCircleFill,
@@ -38,7 +38,7 @@ export default function WellnessPlan() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [customItem, setCustomItem] = useState("");
   const [feedback, setFeedback] = useState(null);
-  const [savingStatus, setSavingStatus] = useState("idle"); 
+  const [savingStatus, setSavingStatus] = useState("idle");
   const [showAllPresets, setShowAllPresets] = useState(false);
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function WellnessPlan() {
       });
       setSavingStatus("success");
       setFeedback({ type: "success", message: "Your wellness plan has been saved!" });
-      
+
       // Auto-dismiss success message after 3 seconds
       setTimeout(() => {
         if (feedback?.type === "success") {
@@ -101,16 +101,15 @@ export default function WellnessPlan() {
   };
 
   // Combine preset items based on view toggle
-  const displayedPresets = showAllPresets 
+  const displayedPresets = showAllPresets
     ? [...presetItems, ...morePresetItems]
     : presetItems;
 
   return (
     <Container className="py-4">
-      {/* Page Header with better styling */}
       <Row className="mb-4">
         <Col>
-          <div className="p-4 rounded-3 bg-gradient" style={{ 
+          <div className="p-4 rounded-3 bg-gradient" style={{
             background: "linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%)",
             boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
           }}>
@@ -122,15 +121,15 @@ export default function WellnessPlan() {
               Create a personalized list of activities that boost your mood and well-being
             </p>
             <p className="small text-muted mb-0">
-              <InfoCircle className="me-1" /> 
+              <InfoCircle className="me-1" />
               These activities will be recommended to you when your mood tracking indicates you might benefit from them
             </p>
           </div>
-          
+
           {feedback && (
-            <Alert 
-              variant={feedback.type} 
-              onClose={() => setFeedback(null)} 
+            <Alert
+              variant={feedback.type}
+              onClose={() => setFeedback(null)}
               dismissible
               className="mt-3 d-flex align-items-center"
               style={{ borderRadius: "12px" }}
@@ -156,7 +155,7 @@ export default function WellnessPlan() {
                 </div>
                 Suggested Wellness Activities
               </Card.Title>
-              
+
               <div className="d-flex flex-wrap gap-2 mb-3">
                 {displayedPresets.map((item) => (
                   <Button
@@ -164,7 +163,7 @@ export default function WellnessPlan() {
                     variant={selectedItems.includes(item.label) ? "primary" : "outline-primary"}
                     onClick={() => toggleItem(item.label)}
                     className="rounded-pill shadow-sm"
-                    style={{ 
+                    style={{
                       borderColor: selectedItems.includes(item.label) ? item.color : "#dee2e6",
                       backgroundColor: selectedItems.includes(item.label) ? item.color : "white",
                       color: selectedItems.includes(item.label) ? "white" : "#495057",
@@ -175,17 +174,17 @@ export default function WellnessPlan() {
                   </Button>
                 ))}
               </div>
-              
-              <Button 
-                variant="link" 
-                className="text-decoration-none p-0" 
+
+              <Button
+                variant="link"
+                className="text-decoration-none p-0"
                 onClick={() => setShowAllPresets(!showAllPresets)}
               >
                 {showAllPresets ? "Show fewer suggestions" : "Show more suggestions"}
               </Button>
             </Card.Body>
           </Card>
-          
+
           <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: "16px" }}>
             <Card.Body className="p-4">
               <Card.Title className="mb-3 d-flex align-items-center">
@@ -194,7 +193,7 @@ export default function WellnessPlan() {
                 </div>
                 Add Your Own Activities
               </Card.Title>
-              
+
               <Form className="d-flex gap-2" onSubmit={(e) => { e.preventDefault(); handleAddCustom(); }}>
                 <Form.Control
                   type="text"
@@ -204,8 +203,8 @@ export default function WellnessPlan() {
                   className="shadow-sm"
                   style={{ borderRadius: "12px" }}
                 />
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   onClick={handleAddCustom}
                   className="rounded-pill"
                 >
@@ -217,8 +216,8 @@ export default function WellnessPlan() {
         </Col>
 
         <Col lg={5}>
-          <Card className="border-0 shadow-sm sticky-top" style={{ 
-            borderRadius: "16px", 
+          <Card className="border-0 shadow-sm sticky-top" style={{
+            borderRadius: "16px",
             top: "20px",
             background: "linear-gradient(145deg, #ffffff, #f5f9ff)"
           }}>
@@ -229,27 +228,27 @@ export default function WellnessPlan() {
                   {selectedItems.length} items
                 </Badge>
               </Card.Title>
-              
+
               {selectedItems.length > 0 ? (
                 <div className="mb-4">
                   {selectedItems.map((item, i) => {
                     // Find matching preset to get color
                     const matchingPreset = [...presetItems, ...morePresetItems].find(preset => preset.label === item);
                     const itemColor = matchingPreset ? matchingPreset.color : "#5e72e4";
-                    
+
                     return (
-                      <div 
-                        key={i} 
+                      <div
+                        key={i}
                         className="d-flex justify-content-between align-items-center p-2 mb-2 rounded"
-                        style={{ 
+                        style={{
                           backgroundColor: "rgba(0,0,0,0.02)",
                           borderLeft: `3px solid ${itemColor}`
                         }}
                       >
                         <span>{item}</span>
-                        <Button 
-                          variant="link" 
-                          className="text-danger p-0" 
+                        <Button
+                          variant="link"
+                          className="text-danger p-0"
                           onClick={() => handleRemoveItem(item)}
                           aria-label={`Remove ${item}`}
                         >
@@ -269,7 +268,7 @@ export default function WellnessPlan() {
                   </p>
                 </div>
               )}
-              
+
               <div className="d-grid">
                 <OverlayTrigger
                   placement="top"
@@ -279,8 +278,8 @@ export default function WellnessPlan() {
                     </Tooltip>
                   }
                 >
-                  <Button 
-                    variant="success" 
+                  <Button
+                    variant="success"
                     onClick={handleSave}
                     className="py-2"
                     style={{ borderRadius: "12px" }}

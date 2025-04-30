@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
+import {
   Container, Card, Form, Row, Col, Badge, Button, Alert,
   InputGroup, Accordion
 } from 'react-bootstrap';
-import { 
-  TelephoneFill, 
+import {
+  TelephoneFill,
   HeartPulseFill,
   Search,
   FilterCircleFill,
@@ -22,7 +22,6 @@ export default function EmergencyHotline() {
   });
   const [showFilters, setShowFilters] = useState(false);
 
-  // Handling filter changes
   const handleFilterChange = (key, value) => {
     setFilters({
       ...filters,
@@ -31,27 +30,27 @@ export default function EmergencyHotline() {
   };
 
   const filteredServices = services.filter(service => {
-    const matchesSearch = 
+    const matchesSearch =
       service.name.toLowerCase().includes(query.toLowerCase()) ||
       service.state.toLowerCase().includes(query.toLowerCase()) ||
       service.type.toLowerCase().includes(query.toLowerCase()) ||
       service.description.toLowerCase().includes(query.toLowerCase());
-    
+
     const matchesType = filters.type === 'all' || service.type === filters.type;
     const matchesState = filters.state === 'all' || service.state === filters.state;
-    const matchesAvailability = 
-      filters.availability === 'all' || 
+    const matchesAvailability =
+      filters.availability === 'all' ||
       (filters.availability === '24/7' && service.hours === '24/7');
-    
+
     return matchesSearch && matchesType && matchesState && matchesAvailability;
   });
 
   const states = ['all', ...new Set(services.map(service => service.state))];
 
-  
+
 
   return (
-    <Container className="py-4">
+    <Container className="py-5">
       {/* Emergency Alert Banner */}
       <Alert variant="danger" className="mb-4 shadow">
         <Row className="align-items-center">
@@ -95,8 +94,8 @@ export default function EmergencyHotline() {
                     aria-describedby="search-addon"
                   />
                   {query && (
-                    <Button 
-                      variant="outline-secondary" 
+                    <Button
+                      variant="outline-secondary"
                       onClick={() => setQuery('')}
                     >
                       Clear
@@ -105,8 +104,8 @@ export default function EmergencyHotline() {
                 </InputGroup>
               </Col>
               <Col md={3}>
-                <Button 
-                  variant="outline-secondary" 
+                <Button
+                  variant="outline-secondary"
                   className="w-100"
                   onClick={() => setShowFilters(!showFilters)}
                 >
@@ -121,7 +120,7 @@ export default function EmergencyHotline() {
                 <Col md={4}>
                   <Form.Group className="mb-3">
                     <Form.Label>Service Type</Form.Label>
-                    <Form.Select 
+                    <Form.Select
                       value={filters.type}
                       onChange={(e) => handleFilterChange('type', e.target.value)}
                     >
@@ -175,7 +174,7 @@ export default function EmergencyHotline() {
           </div>
         </div>
       </Alert>
-      
+
       {/* Services List */}
       <div className="mb-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -195,7 +194,7 @@ export default function EmergencyHotline() {
           ))
         )}
       </div>
-      
+
       {/* FAQ Accordion */}
       <Accordion className="mt-4 mb-3">
         <Accordion.Item eventKey="0">
@@ -224,8 +223,8 @@ export default function EmergencyHotline() {
           </Accordion.Body>
         </Accordion.Item>
       </Accordion>
-      
-      <div className="text-center mt-4">
+
+      <div className="text-center mt-4 pb-5">
         <p className="text-muted">
           <small>
             If you're experiencing a life-threatening emergency, please call 999 immediately.

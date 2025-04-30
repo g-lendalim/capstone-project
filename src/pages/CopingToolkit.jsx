@@ -30,8 +30,8 @@ export default function CopingToolkit() {
             onSelect={(k) => setKey(k)}
             className="mb-4 nav-pills nav-fill"
           >
-            <Tab 
-              eventKey="grounding" 
+            <Tab
+              eventKey="grounding"
               title={
                 <span className="d-flex align-items-center justify-content-center">
                   <HeartPulseFill className="me-2" /> Grounding Techniques
@@ -42,8 +42,8 @@ export default function CopingToolkit() {
                 <GroundingTechniques />
               </div>
             </Tab>
-            <Tab 
-              eventKey="safety" 
+            <Tab
+              eventKey="safety"
               title={
                 <span className="d-flex align-items-center justify-content-center">
                   <ShieldFill className="me-2" /> Safety Plan
@@ -54,8 +54,8 @@ export default function CopingToolkit() {
                 <SafetyPlan />
               </div>
             </Tab>
-            <Tab 
-              eventKey="wellness" 
+            <Tab
+              eventKey="wellness"
               title={
                 <span className="d-flex align-items-center justify-content-center">
                   <HeartFill className="me-2" /> Wellness Plan

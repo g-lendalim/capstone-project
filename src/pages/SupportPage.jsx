@@ -10,10 +10,10 @@ export default function SupportPage() {
             <p className="text-center fs-5 mb-4">Every step forward matters. Discover your pathways to feeling better.</p>
 
             <Row className="mt-5 g-4">
-                <Col md={4} className="mb-4">
-                    <Card 
-                        as={Link} 
-                        to="/coping" 
+                <Col xs={12} md={4} className="mb-4">
+                    <Card
+                        as={Link}
+                        to="/coping"
                         className="text-center text-decoration-none h-100 shadow hover-shadow transition"
                         style={{ borderRadius: "12px", borderLeft: "4px solid #4e95ed", transition: "transform 0.3s" }}
                         onMouseOver={e => e.currentTarget.style.transform = "translateY(-5px)"}
@@ -31,10 +31,10 @@ export default function SupportPage() {
                     </Card>
                 </Col>
 
-                <Col md={4} className="mb-4">
-                    <Card 
-                        as={Link} 
-                        to="/contact" 
+                <Col xs={12} md={4} className="mb-4">
+                    <Card
+                        as={Link}
+                        to="/contact"
                         className="text-center text-decoration-none h-100 shadow hover-shadow transition"
                         style={{ borderRadius: "12px", borderLeft: "4px solid #42b883", transition: "transform 0.3s" }}
                         onMouseOver={e => e.currentTarget.style.transform = "translateY(-5px)"}
@@ -52,10 +52,10 @@ export default function SupportPage() {
                     </Card>
                 </Col>
 
-                <Col md={4} className="mb-4">
-                    <Card 
-                        as={Link} 
-                        to="/emergency" 
+                <Col xs={12} md={4} className="mb-4">
+                    <Card
+                        as={Link}
+                        to="/emergency"
                         className="text-center text-decoration-none h-100 shadow hover-shadow transition"
                         style={{ borderRadius: "12px", borderLeft: "4px solid #ff7676", transition: "transform 0.3s" }}
                         onMouseOver={e => e.currentTarget.style.transform = "translateY(-5px)"}
@@ -74,7 +74,7 @@ export default function SupportPage() {
                 </Col>
             </Row>
 
-            <div className="mt-5 text-center">
+            <div className="pb-5 text-center">
                 <p className="fs-5 fw-light">
                     <em>Reaching out takes courage. You're already taking brave steps toward healing.</em>
                 </p>

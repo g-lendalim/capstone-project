@@ -70,7 +70,7 @@ export default function SupportCircle() {
             setFeedback({ type: "warning", message: "Name and phone cannot be empty." });
             return;
         }
-        
+
         try {
             const res = await api.put(`/contacts/${editingContact.id}`, {
                 name: editingContact.name,
@@ -107,7 +107,7 @@ export default function SupportCircle() {
             setContactToDelete(null);
             setTimeout(() => setFeedback(null), 3000);
         }
-    };    
+    };
 
     if (loading) {
         return (
@@ -175,8 +175,8 @@ export default function SupportCircle() {
                                         </Form.Group>
                                     </Col>
                                 </Row>
-                                <Button 
-                                    variant="primary" 
+                                <Button
+                                    variant="primary"
                                     onClick={handleAddContact}
                                     className="w-100"
                                 >
@@ -195,7 +195,7 @@ export default function SupportCircle() {
                                 <PersonHeart className="me-2 text-success" size={20} />
                                 People Who Care About You
                             </Card.Title>
-                            
+
                             {contacts.length === 0 ? (
                                 <div className="text-center py-4">
                                     <EmojiFrown size={32} className="text-muted mb-3" />
@@ -266,14 +266,14 @@ export default function SupportCircle() {
                                                         <div>
                                                             <div className="fw-bold">{contact.name}</div>
                                                             <div className="text-success d-flex align-items-center">
-                                                                <TelephoneFill 
-                                                                    size={18} 
-                                                                    className="me-1" 
-                                                                    onClick={() => handleCall(contact.phone)} 
-                                                                    style={{ cursor: 'pointer' }} 
+                                                                <TelephoneFill
+                                                                    size={18}
+                                                                    className="me-1"
+                                                                    onClick={() => handleCall(contact.phone)}
+                                                                    style={{ cursor: 'pointer' }}
                                                                 />
                                                                 <a href={`tel:${contact.phone}`} className="text-decoration-none text-success" >
-                                                                    <div style={{fontSize: "16px"}}>{contact.phone}</div>
+                                                                    <div style={{ fontSize: "16px" }}>{contact.phone}</div>
                                                                 </a>
                                                             </div>
                                                         </div>
@@ -307,7 +307,7 @@ export default function SupportCircle() {
                 </Col>
             </Row>
 
-            <Row className="mt-3">
+            <Row className="mt-3 pb-5">
                 <Col>
                     <div className="bg-light p-3 rounded text-center">
                         <p className="mb-0">
