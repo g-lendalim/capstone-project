@@ -82,7 +82,7 @@ export default function LogEntryCard({
         return null;
     }
 
-    const { formattedDate, formattedTime } = formatDateTime(entry.created_at);
+    const { formattedTime } = formatDateTime(entry.created_at);
 
     const formatSleepAwakenings = (label, value) => {
         if (!isValid(value)) return null;
