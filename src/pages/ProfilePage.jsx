@@ -1,43 +1,29 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTimeline } from "../features/logs/logsSlice";
+import { fetchLogsByUser } from "../features/logs/logsSlice";
 import { AuthContext } from "../components/AuthProvider";
 import ProfileHeader from "../components/ProfileHeader";
-import { Spinner, Alert, Container, Nav, Tab } from "react-bootstrap";
+import { Spinner, Alert, Container } from "react-bootstrap";
 import { getMoodLabel, getMoodEmoji, getMoodColor, getMoodDescription, getEnergyEmoji, getEnergyLabel, getAnxietyEmoji, getAnxietyLabel, getStressEmoji, getStressLabel, getIrritabilityEmoji, getIrritabilityLabel, getSleepQualityEmoji, getSleepQualityLabel, getPhysicalActivityLabel, getSocialInteractionLabel } from "../hooks/logLabels";
 import MoodJournal from "../components/MoodJournal";
-import Reminders from "../components/Reminders";
 
-export default function ProfileMainBody() {
+export default function ProfilePage() {
   const { currentUser } = useContext(AuthContext);
   const dispatch = useDispatch();
-  const { timeline, loading, error } = useSelector((state) => state.logs);
+  const { logs, loading, error } = useSelector((state) => state.logs);
   const userId = currentUser.uid;
-  const [activeKey, setActiveKey] = useState("journal");
 
   useEffect(() => {
     if (userId) {
-      dispatch(fetchTimeline(userId));
+      dispatch(fetchLogsByUser(userId));
     }
   }, [dispatch, userId]);
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString(undefined, {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true
-    });
-  };
 
   const getScaleDescription = (value, type) => {
     if (value === null || value === undefined) {
       return "Not recorded";
     }
-    
+
     switch (type) {
       case "energy":
         return `${getEnergyEmoji(value)} ${getEnergyLabel(value)}`;
@@ -53,9 +39,8 @@ export default function ProfileMainBody() {
         return value;
     }
   };
-  
+
   const renderMetric = (label, value, icon, type) => {
-    // Handle undefined values with gentle messaging
     if (value === null || value === undefined) {
       return (
         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -100,9 +85,9 @@ export default function ProfileMainBody() {
           <i className={`bi ${icon} me-2`}></i>
           {label}
         </span>
-        <span 
+        <span
           className={`px-2 py-1 rounded-pill ${className}`}
-          style={{ 
+          style={{
             background: backgroundColor,
             fontSize: '0.85rem'
           }}
@@ -112,10 +97,6 @@ export default function ProfileMainBody() {
       </div>
     );
   }
-
-  // Filter logs and alarms from timeline
-  const logs = timeline.filter((entry) => entry.type === "log");
-  const alarms = timeline.filter((entry) => entry.type === "alarm");
 
   if (loading) {
     return (
@@ -137,48 +118,20 @@ export default function ProfileMainBody() {
 
   return (
     <Container fluid className="px-0">
-      <ProfileHeader 
-        currentUser={currentUser}
+      <ProfileHeader
         logs={logs}
-        alarms={alarms}
       />
-      <Container>
-        <Tab.Container id="journal-tabs" defaultActiveKey="journal" activeKey={activeKey} onSelect={(k) => setActiveKey(k)}>
-          <Nav variant="pills" className="mb-4">
-            <Nav.Item className="me-2">
-              <Nav.Link eventKey="journal" className="px-4 rounded-pill">
-                <i className="bi bi-journal-text me-2"></i>
-                Mood Journals
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="reminders" className="px-4 rounded-pill">
-                <i className="bi bi-bell me-2"></i>
-                Reminders
-              </Nav.Link>
-            </Nav.Item>
-          </Nav>
-
-          <Tab.Content>
-            <Tab.Pane eventKey="journal">
-              <MoodJournal 
-                logs={logs}
-                formatDate={formatDate}
-                getMoodColor={getMoodColor}
-                getMoodLabel={getMoodLabel}
-                getMoodDescription={getMoodDescription}
-                getMoodEmoji={getMoodEmoji}
-                getPhysicalActivityLabel={getPhysicalActivityLabel}
-                getSocialInteractionLabel={getSocialInteractionLabel}
-                renderMetric={renderMetric}
-              />
-            </Tab.Pane>
-
-            <Tab.Pane eventKey="reminders">
-              <Reminders alarms={alarms}/>
-            </Tab.Pane>
-          </Tab.Content>
-        </Tab.Container>
+      <Container className="pb-5">
+        <MoodJournal
+          logs={logs}
+          getMoodColor={getMoodColor}
+          getMoodLabel={getMoodLabel}
+          getMoodDescription={getMoodDescription}
+          getMoodEmoji={getMoodEmoji}
+          getPhysicalActivityLabel={getPhysicalActivityLabel}
+          getSocialInteractionLabel={getSocialInteractionLabel}
+          renderMetric={renderMetric}
+        />
       </Container>
     </Container>
   );

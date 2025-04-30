@@ -2,129 +2,79 @@ import React, { useState, useContext } from "react";
 import { Container, Row, Col, Image, Badge, Button, Spinner, Form } from "react-bootstrap";
 import { AuthContext } from "./AuthProvider";
 import ManualLogModal from "./ManualLogModal";
-import { updateProfile } from "firebase/auth"; // Assuming you're using Firebase
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Assuming Firebase storage
-import { doc, updateDoc } from "firebase/firestore"; // Assuming Firestore
 
-export default function ProfileHeader({ logs, firestore, storage }) {
+export default function ProfileHeader({ logs }) {
     const [showModal, setShowModal] = useState(false);
-    const { currentUser, setCurrentUser } = useContext(AuthContext);
+    const { currentUser, createOrUpdateUserProfile } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [file, setFile] = useState(null);
+    const [error, setError] = useState(null);
 
-    // Edit mode states
-    const [editingInfo, setEditingInfo] = useState(false);
-    const [editingImage, setEditingImage] = useState(false);
+    const [profileData, setProfileData] = useState({
+        name: "",
+        gender: "",
+        age: "",
+        location: "",
+        profile_pic_url: ""
+    });
 
-    // Temporary values for editing
-    const [tempName, setTempName] = useState("");
-    const [tempLocation, setTempLocation] = useState("");
-    const [tempImageFile, setTempImageFile] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [uploadingImage, setUploadingImage] = useState(false);
+    const handleEditToggle = () => {
+        if (!editMode) {
+            setProfileData({
+                name: currentUser?.name || "",
+                gender: currentUser?.gender || "",
+                age: currentUser?.age || "",
+                location: currentUser?.location || "",
+                profile_pic_url: currentUser?.profile_pic_url || ""
+            });
+        }
+        setEditMode(!editMode);
+        setError(null);
+    };
 
     const handleManualLog = () => {
         setShowModal(true);
     };
 
-    // Start editing info
-    const startEditingInfo = () => {
-        setTempName(currentUser.name || "");
-        setTempLocation(currentUser.location || "");
-        setEditingInfo(true);
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setProfileData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    // Save user info changes
-    const saveUserInfo = async () => {
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile) {
+            setFile(selectedFile);
+            setProfileData(prev => ({
+                ...prev,
+                profile_pic_url: URL.createObjectURL(selectedFile)
+            }));
+        }
+    };
+
+    const handleSave = async () => {
+        setLoading(true);
+        setError(null);
+
         try {
-            setLoading(true);
-
-            // Update in Firestore
-            const userRef = doc(firestore, "users", currentUser.uid);
-            await updateDoc(userRef, {
-                name: tempName,
-                location: tempLocation
-            });
-
-            // Update local state
-            setCurrentUser({
-                ...currentUser,
-                name: tempName,
-                location: tempLocation
-            });
-
-            setEditingInfo(false);
-        } catch (error) {
-            console.error("Error updating profile:", error);
-            alert("Failed to update profile information");
+            await createOrUpdateUserProfile(profileData, file);
+            setEditMode(false);
+        } catch (err) {
+            console.error("Error updating profile:", err);
+            setError("Failed to update profile. Please try again.");
         } finally {
             setLoading(false);
         }
     };
 
-    // Cancel info editing
-    const cancelInfoEdit = () => {
-        setEditingInfo(false);
-    };
-
-    // Handle image selection
-    const handleImageChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setTempImageFile(file);
-
-            // Create preview
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setImagePreview(e.target.result);
-            };
-            reader.readAsDataURL(file);
-
-            setEditingImage(true);
-        }
-    };
-
-    // Save profile image
-    const saveProfileImage = async () => {
-        if (!tempImageFile) return;
-
-        try {
-            setUploadingImage(true);
-
-            // Upload to Firebase Storage
-            const storageRef = ref(storage, `profile_pics/${currentUser.uid}`);
-            await uploadBytes(storageRef, tempImageFile);
-
-            // Get download URL
-            const downloadURL = await getDownloadURL(storageRef);
-
-            // Update in Firestore
-            const userRef = doc(firestore, "users", currentUser.uid);
-            await updateDoc(userRef, {
-                profile_pic_url: downloadURL
-            });
-
-            // Update local state
-            setCurrentUser({
-                ...currentUser,
-                profile_pic_url: downloadURL
-            });
-
-            setEditingImage(false);
-            setImagePreview(null);
-            setTempImageFile(null);
-        } catch (error) {
-            console.error("Error uploading image:", error);
-            alert("Failed to update profile image");
-        } finally {
-            setUploadingImage(false);
-        }
-    };
-
-    // Cancel image edit
-    const cancelImageEdit = () => {
-        setEditingImage(false);
-        setImagePreview(null);
-        setTempImageFile(null);
+    const handleCancel = () => {
+        setEditMode(false);
+        setError(null);
+        setFile(null);
     };
 
     const renderProfileItem = (label, value, icon) => {
@@ -162,61 +112,22 @@ export default function ProfileHeader({ logs, firestore, storage }) {
                 {loading ? (
                     <div className="text-center p-4">
                         <Spinner animation="border" variant="primary" />
-                        <p className="mt-2 text-muted">Loading profile...</p>
+                        <p className="mt-2 text-muted">Updating profile...</p>
                     </div>
                 ) : (
                     <Row className="align-items-center">
-                        {/* Profile Picture - Full Width on Mobile */}
-                        <Col xs={12} md={2} className="text-center mb-3 mb-md-0">
-                            <div className="avatar-container position-relative mx-auto" style={{ maxWidth: '120px' }}>
-                                {editingImage ? (
+                        <Col md={2} className="text-center">
+                            <div className="avatar-container position-relative">
+                                {editMode ? (
                                     <>
                                         <Image
-                                            src={imagePreview || currentUser.profile_pic_url || "/default-avatar.png"}
+                                            src={profileData.profile_pic_url || "/default-avatar.png"}
                                             roundedCircle
                                             className="mb-2 shadow-sm"
                                             style={{
                                                 width: '110px',
                                                 height: '110px',
                                                 objectFit: 'cover',
-                                                backgroundColor: '#f8f9fa'
-                                            }}
-                                        />
-                                        <div className="mt-2">
-                                            {uploadingImage ? (
-                                                <Spinner animation="border" size="sm" />
-                                            ) : (
-                                                <>
-                                                    <Button
-                                                        variant="success"
-                                                        size="sm"
-                                                        className="me-1"
-                                                        onClick={saveProfileImage}
-                                                    >
-                                                        <i className="bi bi-check"></i> Save
-                                                    </Button>
-                                                    <Button
-                                                        variant="secondary"
-                                                        size="sm"
-                                                        onClick={cancelImageEdit}
-                                                    >
-                                                        <i className="bi bi-x"></i> Cancel
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Image
-                                            src={currentUser.profile_pic_url || "/default-avatar.png"}
-                                            roundedCircle
-                                            className="mb-2 shadow-sm"
-                                            style={{
-                                                width: '110px',
-                                                height: '110px',
-                                                objectFit: 'cover',
-                                                border: '3px solid #fff',
                                                 backgroundColor: '#f8f9fa'
                                             }}
                                             onError={(e) => {
@@ -224,92 +135,119 @@ export default function ProfileHeader({ logs, firestore, storage }) {
                                                 e.target.src = "/default-avatar.png";
                                             }}
                                         />
-                                        <div
-                                            className="edit-avatar-overlay"
-                                            style={{
-                                                position: 'absolute',
-                                                bottom: '15px',
-                                                right: '0',
-                                                left: '0',
-                                                margin: 'auto',
-                                                width: 'fit-content'
-                                            }}
-                                        >
-                                            <label htmlFor="profile-pic-upload" className="btn btn-sm btn-light rounded-circle shadow-sm">
-                                                <i className="bi bi-pencil"></i>
-                                            </label>
-                                            <input
-                                                type="file"
-                                                id="profile-pic-upload"
-                                                className="d-none"
-                                                accept="image/*"
-                                                onChange={handleImageChange}
-                                            />
+                                        <div className="mt-2">
+                                            <Form.Group>
+                                                <Form.Label className="btn btn-sm btn-outline-primary">
+                                                    <i className="bi bi-camera me-1"></i>
+                                                    Change Photo
+                                                    <Form.Control
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleFileChange}
+                                                        style={{ display: 'none' }}
+                                                    />
+                                                </Form.Label>
+                                            </Form.Group>
                                         </div>
                                     </>
+                                ) : (
+                                    <Image
+                                        src={currentUser.profile_pic_url || "/default-avatar.png"}
+                                        roundedCircle
+                                        className="mb-2 shadow-sm"
+                                        style={{
+                                            width: '110px',
+                                            height: '110px',
+                                            objectFit: 'cover',
+                                            backgroundColor: '#f8f9fa'
+                                        }}
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = "/default-avatar.png";
+                                        }}
+                                    />
                                 )}
                             </div>
                         </Col>
-
-                        {/* User Info */}
-                        <Col xs={12} md={7} className="mb-3 mb-md-0">
-                            {editingInfo ? (
-                                <div>
+                        <Col md={7}>
+                            {editMode ? (
+                                <Form>
+                                    {error && (
+                                        <div className="alert alert-danger py-2" role="alert">
+                                            {error}
+                                        </div>
+                                    )}
                                     <Form.Group className="mb-2">
-                                        <Form.Label className="fw-bold">Name</Form.Label>
                                         <Form.Control
                                             type="text"
-                                            value={tempName}
-                                            onChange={(e) => setTempName(e.target.value)}
+                                            name="name"
+                                            value={profileData.name}
+                                            onChange={handleInputChange}
+                                            placeholder="Name"
+                                            style={{ fontSize: '1.2rem', fontWeight: 'bold' }}
                                         />
                                     </Form.Group>
-                                    <Form.Group className="mb-2 text-muted">
-                                        <Form.Label className="fw-bold">Location</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            value={tempLocation}
-                                            onChange={(e) => setTempLocation(e.target.value)}
-                                        />
+                                    <Form.Group className="mb-2">
+                                        <div className="input-group input-group-sm">
+                                            <span className="input-group-text bg-light">
+                                                <i className="bi bi-geo-alt text-primary"></i>
+                                            </span>
+                                            <Form.Control
+                                                type="text"
+                                                name="location"
+                                                value={profileData.location}
+                                                onChange={handleInputChange}
+                                                placeholder="Location"
+                                                size="sm"
+                                            />
+                                        </div>
                                     </Form.Group>
-                                    <div>
+                                    <input
+                                        type="hidden"
+                                        name="age"
+                                        value={profileData.age}
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="gender"
+                                        value={profileData.gender}
+                                    />
+                                    <div className="mt-3">
                                         <Button
-                                            variant="primary"
+                                            variant="light"
                                             size="sm"
+                                            onClick={handleCancel}
                                             className="me-2"
-                                            onClick={saveUserInfo}
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <><Spinner animation="border" size="sm" /> Saving...</>
-                                            ) : (
-                                                <><i className="bi bi-check"></i> Save Changes</>
-                                            )}
-                                        </Button>
-                                        <Button
-                                            variant="outline-secondary"
-                                            size="sm"
-                                            onClick={cancelInfoEdit}
-                                            disabled={loading}
                                         >
                                             Cancel
                                         </Button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="d-flex align-items-center">
-                                        <h3 className="fw-bold mb-2 fs-4 fs-md-3">{currentUser.name || "Journal Owner"}</h3>
                                         <Button
-                                            variant="link"
-                                            className="p-0 ms-2"
-                                            onClick={startEditingInfo}
+                                            variant="primary"
+                                            size="sm"
+                                            onClick={handleSave}
                                         >
-                                            <i className="bi bi-pencil-square text-primary"></i>
+                                            <i className="bi bi-check2 me-1"></i>
+                                            Save Changes
                                         </Button>
                                     </div>
-                                    <div className="d-flex flex-column">
+                                </Form>
+                            ) : (
+                                <>
+                                    <div className="ms-3 d-flex align-items-center">
+                                        <h3 className="fw-bold mb-2 me-2">{currentUser.name || "Journal Owner"}</h3>
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            className="rounded-pill"
+                                            onClick={handleEditToggle}
+                                        >
+                                            <i className="bi bi-pencil-square me-1"></i>
+                                            Edit Profile
+                                        </Button>
+                                    </div>
+                                    <div className="ms-3 d-flex flex-column">
                                         {renderProfileItem("Location", currentUser.location, "geo-alt")}
-                                        <div className="mt-1">
+                                        <div className="mt-2">
                                             <Badge bg="light" text="dark" className="px-2 py-1 border">
                                                 <i className="bi bi-journal-text me-1"></i>
                                                 {logs.length} Mood Journal{logs.length !== 1 ? 's' : ''}
@@ -319,12 +257,10 @@ export default function ProfileHeader({ logs, firestore, storage }) {
                                 </>
                             )}
                         </Col>
-
-                        {/* Add Journal Button */}
-                        <Col xs={12} md={3} className="text-center text-md-end">
+                        <Col md={3} className="mt-3 text-end">
                             <Button
                                 variant="primary"
-                                className="rounded-pill px-3 text-white w-100 w-md-auto"
+                                className="rounded-pill px-3 text-white"
                                 onClick={handleManualLog}
                             >
                                 <i className="bi bi-plus-lg me-1"></i>
