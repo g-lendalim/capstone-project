@@ -87,7 +87,7 @@ export default function AuthPage() {
         <Row className="justify-content-center">
           <Col sm={10} md={8} xl={6}>
             <div className="text-center mb-4">
-              <h1 className="fw-bold" style={{ color: "#9CB3DD", fontSize: '50px' }}>
+              <h1 className="fw-bold" style={{ color: "#8daeea", fontSize: '50px' }}>
                 <i className="bi bi-house-heart-fill me-2"></i>
                 Safe Space
               </h1>
