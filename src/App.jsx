@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { Navbar, Container, Row, Col } from 'react-bootstrap';
-import { BrowserRouter, Route, Routes, Link, Outlet } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Link, Outlet, Navigate } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { getAuth } from "firebase/auth";
@@ -14,6 +14,7 @@ import SupportPage from "./pages/SupportPage";
 import CopingToolkit from "./pages/CopingToolkit";
 import SupportCircle from "./pages/SupportCircle";
 import EmergencyHotline from "./pages/EmergencyHotline";
+import PrivateRoute from './components/PrivateRoute';
 import { Provider } from 'react-redux';
 import store from './store';
 
@@ -157,24 +158,24 @@ function Layout() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Provider store={store}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<AuthPage />} />
-            <Route path="*" element={<AuthPage />} />
-            <Route path="/" element={<Layout />}>
-              <Route path="home" element={<Dashboard />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="alarm" element={<AlarmPage />} />
-              <Route path="support" element={<SupportPage />} />
-              <Route path="coping" element={<CopingToolkit />} />
-              <Route path="contact" element={<SupportCircle />} />
-              <Route path="emergency" element={<EmergencyHotline />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </Provider>
-    </AuthProvider>
+      <AuthProvider>
+        <Provider store={store}>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<AuthPage />} />
+              <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+                <Route path="home" element={<Dashboard />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="alarm" element={<AlarmPage />} />
+                <Route path="support" element={<SupportPage />} />
+                <Route path="coping" element={<CopingToolkit />} />
+                <Route path="contact" element={<SupportCircle />} />
+                <Route path="emergency" element={<EmergencyHotline />} />
+              </Route>
+              <Route path="*" element={<AuthPage />} />
+            </Routes>
+          </BrowserRouter>
+        </Provider>
+      </AuthProvider>
   );
 }
