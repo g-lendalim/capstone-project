@@ -241,7 +241,7 @@ export default function Dashboard() {
                 </div>
                 <div className="support-info flex-grow-1">
                   <h6 className="mb-0">{services[0].name}</h6>
-                  <small className="text-muted">{services[0].description}</small>
+                  <Badge bg="light" text="dark" className="me-2">Emergency</Badge>
                 </div>
                 <Button
                   sm={12}
@@ -274,9 +274,7 @@ export default function Dashboard() {
                   </div>
                   <div className="support-info flex-grow-1">
                     <h6 className="mb-0">{contacts[0].name}</h6>
-                    <div>
-                      <Badge bg="light" text="dark" className="me-2">Personal Contact</Badge>
-                    </div>
+                    <Badge bg="light" text="dark" className="me-2">Personal Contact</Badge>
                   </div>
                   <Button
                     sm={12}

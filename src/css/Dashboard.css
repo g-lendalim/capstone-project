@@ -1,0 +1,174 @@
+.dashboard-container {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.quote {
+  font-size: 0.9rem;
+  border-left-color: #0d6efd !important;
+}
+
+/* Mood check section */
+/* Dashboard Mood Emojis */
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(1, auto);
+  gap: 10px;
+  width: 100%;
+  margin: 0 auto 20px;
+}
+
+.mood-option {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  padding: 10px 5px;
+  text-align: center;
+}
+
+.mood-option:hover {
+  transform: scale(1.1);
+}
+
+.mood-option.selected {
+  background-color: rgba(13, 110, 253, 0.1);
+  border-radius: 12px;
+}
+
+.mood-emoji {
+  display: block;
+}
+
+.mood-label {
+  font-size: 0.85rem;
+  display: block;
+  white-space: nowrap;
+}
+
+/* Ensure mobile responsiveness */
+@media (max-width: 1024px) {
+  .mood-grid {
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(2, auto);
+    gap: 8px;
+  }
+
+  .mood-option {
+    padding: 8px 2px;
+  }
+
+  .mood-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Card styling */
+.card-icon-container {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* Journal streak dots */
+.streak-container {
+  margin-top: 0.5rem;
+}
+
+.streak-day {
+  width: 12%;
+  height: 6px;
+  background-color: #dee2e6;
+  border-radius: 3px;
+}
+
+.streak-day.active {
+  background-color: #198754;
+}
+
+/* Mood chart */
+.chart-bar {
+  width: 100%;
+  background-color: rgba(13, 110, 253, 0.2);
+  border-radius: 3px 3px 0 0;
+}
+
+.chart-bar.current {
+  background-color: #ffc107;
+}
+
+/* Toolkit section */
+.toolkit-icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.toolkit-card {
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.toolkit-card:hover {
+  transform: translateY(-3px);
+}
+
+.toolkit-label {
+  font-size: 0.85rem;
+}
+
+/* Chatbot FAB */
+.chatbot-fab {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background-color: #0d6efd;
+  color: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  z-index: 1030;
+}
+
+/* Bottom navigation */
+.bottom-nav {
+  padding: 10px 0;
+  border-top: 1px solid #dee2e6;
+}
+
+.nav-item {
+  padding: 5px 0;
+  cursor: pointer;
+}
+
+.nav-item i {
+  font-size: 1.25rem;
+  margin-bottom: 2px;
+}
+
+.nav-item.active {
+  color: #0d6efd;
+}
+
+/* Support services section */
+.support-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
