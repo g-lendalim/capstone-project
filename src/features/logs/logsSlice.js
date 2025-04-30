@@ -105,38 +105,10 @@ export const deleteLog = createAsyncThunk(
   }
 );
 
-export const fetchTimeline = createAsyncThunk(
-  "logs/fetchTimeline",
-  async (userId) => {
-    try {
-      const res = await api.get(`/timeline/${userId}`);
-      return res.data;
-    } catch (error) {
-      console.error("Error fetching timeline:", error);
-      throw error;
-    }
-  }
-);
-
-export const getChatbotResponse = createAsyncThunk(
-  "logs/getChatbotResponse",
-  async (logData) => {
-    try {
-      const res = await api.post("/chatbot", logData);
-      return res.data.reply;
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-  }
-);
-
 const logsSlice = createSlice({
   name: "logs",
   initialState: {
     logs: [],
-    timeline: [],
-    chatbotResponse: "",
     loading: false,
     error: null,
     coreLogs: {
@@ -175,9 +147,6 @@ const logsSlice = createSlice({
     },
   },
   reducers: {
-    clearChatbotResponse: (state) => {
-      state.chatbotResponse = "";
-    },
     resetLogs: (state) => {
       state.coreLogs = {
         mood: 0,
@@ -249,34 +218,8 @@ const logsSlice = createSlice({
       .addCase(deleteLog.fulfilled, (state, action) => {
         state.logs = state.logs.filter((log) => log.id !== action.payload);
       })
-
-      .addCase(fetchTimeline.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchTimeline.fulfilled, (state, action) => {
-        state.loading = false;
-        state.timeline = action.payload;
-      })
-      .addCase(fetchTimeline.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-
-      .addCase(getChatbotResponse.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getChatbotResponse.fulfilled, (state, action) => {
-        state.loading = false;
-        state.chatbotResponse = action.payload;
-      })
-      .addCase(getChatbotResponse.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      });
   },
 });
 
-export const { clearChatbotResponse, resetLogs, setCoreLogs, setExtendedLogs } = logsSlice.actions;
+export const { resetLogs, setCoreLogs, setExtendedLogs } = logsSlice.actions;
 export default logsSlice.reducer;
