@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { Navbar, Container, Row, Col } from 'react-bootstrap';
 import { BrowserRouter, Route, Routes, Link, Outlet, Navigate } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
+import api from './api';
 import { getAuth } from "firebase/auth";
 import { AuthContext } from './components/AuthProvider';
 import { AuthProvider } from './components/AuthProvider';
@@ -47,9 +47,7 @@ function Layout() {
     setMessages([...messages, userMessage]);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/generate", {
-        prompt
-      });
+      const res = await api.post("/generate", { prompt });
 
       const data = res.data;
       if (data.reply) {

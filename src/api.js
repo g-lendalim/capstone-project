@@ -1,10 +1,20 @@
 import axios from 'axios';
+import { getAuth } from 'firebase/auth';
 
 const API_BASE_URL = "https://e4254de5-9bc0-4814-a621-e6cc051e1893-00-8t2uq3t83cm2.pike.replit.dev";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
 });
+
+async function getFreshToken() {
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (user) {
+    return await user.getIdToken(); // gets a fresh ID token
+  }
+  return null;
+}
 
 // Automatically attach token to requests if available
 api.interceptors.request.use(

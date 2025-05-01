@@ -18,7 +18,7 @@ import '../css/Dashboard.css';
 import api from "../api";
 
 export default function Dashboard() {
-  const { currentUser, createOrUpdateUserProfile, profileExists, loading, isProfileComplete } = useContext(AuthContext);
+  const { currentUser, createOrUpdateUserProfile, isProfileComplete } = useContext(AuthContext);
 
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const today = new Date();
@@ -31,7 +31,6 @@ export default function Dashboard() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const [contacts, setContacts] = useState([]);
-  const [error, setError] = useState(null);
 
   const initialProfileData = {
     name: currentUser?.name || '',
@@ -109,7 +108,6 @@ export default function Dashboard() {
           setContacts(response.data);
         } catch (err) {
           console.error("Error fetching contacts:", err);
-          setError("Failed to fetch contacts.");
         }
       }
     };

@@ -5,7 +5,6 @@ import { Card } from 'react-bootstrap';
 export default function DailyStreaksLog({ userId }) {
     const [weekData, setWeekData] = useState([]);
     const [streakCount, setStreakCount] = useState(0);
-    const [longestStreak, setLongestStreak] = useState(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -19,7 +18,6 @@ export default function DailyStreaksLog({ userId }) {
                 if (response.data && Array.isArray(response.data.weeklyData)) {
                     setWeekData(response.data.weeklyData);
                     setStreakCount(response.data.currentStreak || 0);
-                    setLongestStreak(response.data.maxStreak || 0);
                 } else {
                     console.warn("Response format doesn't match expected structure", response.data);
 
@@ -48,7 +46,6 @@ export default function DailyStreaksLog({ userId }) {
                 console.error("Error fetching weekly streak data:", error);
                 setWeekData([]);
                 setStreakCount(0);
-                setLongestStreak(0);
             } finally {
                 setLoading(false);
             }

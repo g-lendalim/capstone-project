@@ -1,47 +1,12 @@
 import React from "react";
-import { Accordion, Form, Card, ProgressBar, Row, Col, Badge } from "react-bootstrap";
+import { Accordion, Form, Row, Col } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { setCoreLogs, setExtendedLogs } from "../features/logs/logsSlice";
-import { getMoodEmoji, getMoodLabel } from "../hooks/logLabels";
+import { getMoodEmoji, getMoodLabel, getAnxietyEmoji, getAnxietyLabel, getStressEmoji, getStressLabel, getIrritabilityEmoji, getIrritabilityLabel } from "../hooks/logLabels";
 
 export default function BedtimeLogForm({ handleImageUpload }) {
     const dispatch = useDispatch();
     const { coreLogs, extendedLogs } = useSelector((state) => state.logs);
-    const renderSlider = (label, emoji, value, onChange, min = 0, max = 10, color = "#f06595") => (
-        <Form.Group className="mb-4">
-            <Form.Label className="fw-medium d-flex align-items-center">
-                <span style={{ fontSize: "22px", marginRight: "10px", color }}>{emoji}</span>
-                <span style={{ color }}>{label}</span>
-            </Form.Label>
-            <div className="position-relative mb-2">
-                <Form.Range
-                    min={min}
-                    max={max}
-                    value={value || 0}
-                    onChange={onChange}
-                    className="mb-1"
-                />
-                <div className="d-flex justify-content-between mb-2">
-                    <small className="text-muted">Low</small>
-                    <small className="text-muted">High</small>
-                </div>
-                <ProgressBar
-                    now={value * 10}
-                    variant={value <= 3 ? "success" : value <= 7 ? "warning" : "danger"}
-                    style={{ height: "6px" }}
-                    className="mt-1 mb-2"
-                />
-                <div className="text-center mt-2">
-                    <Badge
-                        bg={value <= 3 ? "success" : value <= 7 ? "warning" : "danger"}
-                        className="px-3 py-2"
-                    >
-                        <span style={{ fontSize: "1.1rem" }}>{value}/10</span>
-                    </Badge>
-                </div>
-            </div>
-        </Form.Group>
-    );
 
     return (
         <div className="bedtime-log-form">
