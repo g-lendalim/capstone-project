@@ -1,9 +1,10 @@
 {
     "routes": [
-        {
-            "src": "/[^.)+",
-            "dest": "/",
-            "status": 200
-        }
+      {
+        "src": "/(.*)",
+        "destination": "/",
+        "status": 200
+      }
     ]
-}
+  }
+  
