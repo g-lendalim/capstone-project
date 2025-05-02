@@ -47,7 +47,7 @@ function Layout() {
     setMessages([...messages, userMessage]);
 
     try {
-      const res = await api.post("/generate", { prompt });
+      const res = await api.post("/api/generate", { prompt });
 
       const data = res.data;
       if (data.reply) {
