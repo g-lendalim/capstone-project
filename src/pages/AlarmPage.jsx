@@ -11,8 +11,7 @@ export default function AlarmPage() {
   const { currentUser } = useContext(AuthContext);
   const [alarms, setAlarms] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ type: '', time: '', label: '', checklist: [], isEnabled: false });
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [formData, setFormData] = useState({ type: '', time: '', date: '', label: '', reminder: '', checklist: [], isEnabled: true });
   const [checkedItems, setCheckedItems] = useState({});
   const [showLogModal, setShowLogModal] = useState(false);
   const [currentAlarm, setCurrentAlarm] = useState(null);
@@ -81,9 +80,9 @@ export default function AlarmPage() {
     try {
       const dataToSubmit = {
         ...formData,
-        isEnabled: formData.isEnabled === true,
+        isEnabled: true,
         user_id: currentUser.uid,
-        reminder: formData.reminderTime ? new Date(formData.reminderTime).toISOString() : null,
+        reminder: formData.reminder || null,
         sound_url: formData.sound_url || null,
         date: formData.date || null
       };
@@ -110,7 +109,7 @@ export default function AlarmPage() {
         }
       }
       setShowModal(false);
-      setFormData({ type: '', time: '', label: '', checklist: [], isEnabled: false });
+      setFormData({ type: '', time: '', date: '', label: '', checklist: [], isEnabled: true });
     } catch (err) {
       console.error('Error saving alarm:', err);
     }
@@ -138,16 +137,6 @@ export default function AlarmPage() {
     setShowLogModal(false);
   };
 
-  const handleReminder = (selectedDateTime, hoursBefore) => {
-    const reminderTime = new Date(selectedDateTime);
-    reminderTime.setHours(reminderTime.getHours() - hoursBefore);
-
-    setFormData((prev) => ({
-      ...prev,
-      reminderTime: reminderTime.toISOString(),
-    }));
-  };
-
   const handleToggle = async (alarmId, isEnabled) => {
     try {
       const currentAlarm = alarms.find(alarm => alarm.id === alarmId);
@@ -162,7 +151,7 @@ export default function AlarmPage() {
         checklist: Array.isArray(currentAlarm.checklist) ? currentAlarm.checklist : [],
         sound_url: currentAlarm.sound_url || null,
         date: currentAlarm.date || null,
-        reminderTime: currentAlarm.reminderTime || null,
+        reminder: currentAlarm.reminder || null,
         time: currentAlarm.time
       };
       console.log('Updating alarm toggle state:', dataToSubmit);
@@ -199,7 +188,7 @@ export default function AlarmPage() {
           variant="primary"
           className="rounded-pill px-3 py-2"
           onClick={() => {
-            setFormData({ type: '', time: '', label: '', checklist: [], isEnabled: false });
+            setFormData({ type: '', time: '', date: '', label: '', reminder: '', checklist: [], isEnabled: true });
             setShowModal(true);
           }}
         >
@@ -236,8 +225,6 @@ export default function AlarmPage() {
         </ul>
       </div>
 
-
-
       {filteredAlarms.length === 0 ? (
         <Card className="text-center p-5 shadow-sm">
           <div className="py-5">
@@ -247,7 +234,7 @@ export default function AlarmPage() {
             <Button
               variant="primary"
               onClick={() => {
-                setFormData({ type: '', time: '', label: '', checklist: [], isEnabled: false });
+                setFormData({ type: '', time: '', date: '', label: '', reminder: '', checklist: [], isEnabled: true });
                 setShowModal(true);
               }}
             >
@@ -324,12 +311,9 @@ export default function AlarmPage() {
         formData={formData}
         handleFormChange={handleFormChange}
         handleTypeChange={handleTypeChange}
-        showCalendar={showCalendar}
-        setShowCalendar={setShowCalendar}
         handleChecklistChange={handleChecklistChange}
         addChecklistItem={addChecklistItem}
         removeChecklistItem={removeChecklistItem}
-        handleReminder={handleReminder}
         handleSubmit={handleSubmit}
       />
 

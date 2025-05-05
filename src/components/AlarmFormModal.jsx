@@ -7,45 +7,71 @@ export default function AlarmFormModal({
   formData,
   handleFormChange,
   handleTypeChange,
-  handleReminder,
   handleChecklistChange,
   addChecklistItem,
   removeChecklistItem,
   handleSubmit,
-  showCalendar,
-  setShowCalendar,
 }) {
   const safeFormData = {
     id: formData.id || '',
     type: formData.type || '',
     time: formData.time || '',
-    date: formData.date || '',
+    date: formData.date ? formData.date.split('T')[0] : '',
     label: formData.label || '',
     reminder: formData.reminder || '',
     checklist: Array.isArray(formData.checklist) ? formData.checklist : [],
     isEnabled: formData.isEnabled !== undefined ? formData.isEnabled : true,
   };
 
+  const showCalendar = safeFormData.type === 'Therapy'
+
+  const reminderOptions = [
+    { label: '1 Hour Before', value: 1 },
+    { label: '2 Hours Before', value: 2 },
+    { label: '3 Hours Before', value: 3 },
+    { label: '4 Hours Before', value: 4 },
+    { label: '6 Hours Before', value: 6 },
+    { label: '12 Hours Before', value: 12 },
+    { label: '24 Hours Before', value: 24 },
+  ]; 
+
   const handleReminderChange = (e) => {
-    const value = e.target.value;
-    handleFormChange(e);
-    setTimeout(() => {
-      if (value && formData.date && formData.time) {
-        const hoursBefore = parseInt(value.split(' ')[0]);
-        const dateTimeStr = `${formData.date}T${formData.time}:00`;
-        const selectedDateTime = new Date(dateTimeStr);
+    const offsetHours = parseInt(e.target.value, 10);
 
-        if (!isNaN(selectedDateTime.getTime())) {
-          const reminderTime = new Date(selectedDateTime);
-          reminderTime.setHours(reminderTime.getHours() - hoursBefore);
-          handleReminder(selectedDateTime, hoursBefore);
-        } else {
-          console.warn('Invalid date/time for reminder calculation:', dateTimeStr);
-        }
-      }
-    }, 0);
+    // If there's no time or date, don't update reminder
+    if (!safeFormData.date || !safeFormData.time || isNaN(offsetHours)) {
+      handleFormChange({
+        target: {
+          name: 'reminderOffset',
+          value: '',
+        },
+      });
+      handleFormChange({
+        target: {
+          name: 'reminder',
+          value: '',
+        },
+      });
+      return;
+    }
+
+    const alarmDateTimeString = `${safeFormData.date}T${safeFormData.time}`;
+    const alarmDateTime = new Date(alarmDateTimeString);
+    const reminderDateTime = new Date(alarmDateTime.getTime() - offsetHours * 60 * 60 * 1000);
+    handleFormChange({
+      target: {
+        name: 'reminderOffset',
+        value: offsetHours,
+      },
+    });
+    handleFormChange({
+      target: {
+        name: 'reminder',
+        value: reminderDateTime,
+      },
+    });
   };
-
+  
   const handleTimeChange = (e) => {
     const timeValue = e.target.value || '';
     handleFormChange({
@@ -64,7 +90,7 @@ export default function AlarmFormModal({
         value: dateValue
       }
     });
-  };
+  }; 
 
   return (
     <Modal show={show} onHide={onHide} centered>
@@ -82,8 +108,7 @@ export default function AlarmFormModal({
         <Form>
           <Form.Group>
             <Form.Label style={{ color: '#4b0082' }}>Choose Alarm Type</Form.Label>
-            <Form.Control
-              as="select"
+            <Form.Select
               name="type"
               value={safeFormData.type}
               onChange={(e) => handleTypeChange(e.target.value)}
@@ -94,7 +119,7 @@ export default function AlarmFormModal({
               <option value="Bedtime">Time to Wind Down</option>
               <option value="Therapy">Therapy Time</option>
               <option value="Medication">Pill Time</option>
-            </Form.Control>
+            </Form.Select>
           </Form.Group>
 
           <Form.Group className="mt-3">
@@ -124,7 +149,7 @@ export default function AlarmFormModal({
               {safeFormData.type === 'Therapy' ? 'Set Date and Time' : 'Set Time'}
             </Form.Label>
 
-            {safeFormData.type === 'Therapy' ? (
+            {safeFormData.type === 'Therapy' && showCalendar ? (
               <Row className="g-2">
                 <Col xs={5}>
                   <Form.Control
@@ -156,50 +181,21 @@ export default function AlarmFormModal({
             )}
           </Form.Group>
 
-          {showCalendar && (
-            <div className="mt-3 p-3 border rounded">
-              <h6 style={{ color: '#4b0082' }}>Select Date</h6>
-              <Form.Control
-                type="date"
-                name="date"
-                value={safeFormData.date}
-                onChange={handleDateChange}
-              />
-              <div className="d-flex justify-content-end mt-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowCalendar(false)}
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          )}
-
           {safeFormData.type === 'Therapy' && (
             <Form.Group className="mt-3">
               <Form.Label style={{ color: '#4b0082' }}>Set Reminder</Form.Label>
-              <Form.Control
-                as="select"
-                name="reminder"
-                value={safeFormData.reminder}
+              <Form.Select
+                name="reminderOffset"
+                value={safeFormData.reminderOffset}
                 onChange={handleReminderChange}
-                style={{
-                  borderColor: '#4b0082',
-                  color: '#4b0082',
-                  backgroundColor: '#f8f8ff',
-                }}
               >
                 <option value="">No Reminder</option>
-                <option value="1 hour before">1 Hour Before</option>
-                <option value="2 hours before">2 Hours Before</option>
-                <option value="3 hours before">3 Hours Before</option>
-                <option value="4 hours before">4 Hours Before</option>
-                <option value="6 hours before">6 Hours Before</option>
-                <option value="12 hours before">12 Hours Before</option>
-                <option value="24 hours before">24 Hours Before</option>
-              </Form.Control>
+                {reminderOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
           )}
 

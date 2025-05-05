@@ -12,12 +12,6 @@ export default function AlarmCard({ alarm, handleEdit, handleDelete, handleCheck
     }, [alarm.isEnabled]);
 
     const getFullDateTime = (alarm) => {
-        if (alarm.type === 'Therapy' && alarm.date) {
-            const [year, month, day] = alarm.date.split('-');
-            const [hours, minutes] = alarm.time.split(':');
-            return new Date(year, month - 1, day, hours, minutes);
-        }
-
         const [hours, minutes] = alarm.time.split(':');
         const now = new Date();
         const today = new Date(
@@ -35,18 +29,18 @@ export default function AlarmCard({ alarm, handleEdit, handleDelete, handleCheck
         return today;
     };
 
-    const triggerTime = getFullDateTime(alarm);
-
+    const triggerTime = alarm.type === "Therapy" ? new Date(alarm.reminder) : getFullDateTime(alarm);
+    
     useAlarm(
         triggerTime,
         () => {
-            console.log(`Alarm "${alarm.label}" is triggered!`);
-            setCurrentAlarm(alarm);
-            setShowLogModal(true);
+          console.log(`Alarm "${alarm.label}" is triggered!`);
+          setCurrentAlarm(alarm);
+          setShowLogModal(true);
         },
-        alarm.reminderTime || null,
+        alarm.reminder ? new Date(alarm.reminder) : null,
         !isEnabled
-    );
+      );      
 
     const toggleAlarm = () => {
         const newState = !isEnabled;

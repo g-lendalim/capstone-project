@@ -1,7 +1,13 @@
 import { useRef, useEffect } from 'react';
 
-export default function useAlarm(alarmTime, callback, reminderTime = null, isDisabled) {
+export default function useAlarm(alarmTime, callback, reminderTime, isDisabled) {
   const isRinging = useRef(false);
+
+  useEffect(() => {
+    if (!isDisabled) {
+      isRinging.current = false;
+    }
+  }, [alarmTime, reminderTime, isDisabled]);
 
   useEffect(() => {
     if (isDisabled || isRinging.current) return;
@@ -10,8 +16,9 @@ export default function useAlarm(alarmTime, callback, reminderTime = null, isDis
 
     let targetTime;
     try {
-      targetTime = reminderTime ? new Date(reminderTime) :
-        (alarmTime instanceof Date ? alarmTime : new Date(alarmTime));
+      targetTime = reminderTime 
+      ? (reminderTime instanceof Date ? reminderTime : new Date(reminderTime))
+      : (alarmTime instanceof Date ? alarmTime : new Date(alarmTime));
     } catch (error) {
       console.warn('Error parsing date:', error);
       return;
