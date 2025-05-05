@@ -84,6 +84,15 @@ export default function LogPromptModal({ show, onHide, alarm, userId, dismissAla
   );
 
   const renderStep = () => {
+    if (alarm.type === "Therapy" || alarm.type === "Medication") {
+      return (
+        <>
+          <h4 className="mb-3">⏰ {alarm.label} Alarm</h4>
+          <p className="text-muted">Your {alarm.type} alarm has been triggered.</p>
+        </>
+      );      
+    }
+
     switch (step) {
       case 1:
         return (
@@ -124,11 +133,26 @@ export default function LogPromptModal({ show, onHide, alarm, userId, dismissAla
           <Modal.Title>Check-In</Modal.Title>
         </Modal.Header>
         <Modal.Body>{renderStep()}</Modal.Body>
-        <Modal.Footer>
-          <Button variant="outline-danger" onClick={() => setShowSkipConfirm(true)}>
-            Skip for now
-          </Button>
-        </Modal.Footer>
+
+        {alarm.type === "Therapy" || alarm.type === "Medication" ? (
+          <Modal.Footer className="d-flex justify-content-end">
+            <Button
+              variant="primary"
+              onClick={() => {
+                dismissAlarm(alarm.id);
+                onHide();
+              }}
+            >
+              OK
+            </Button>
+          </Modal.Footer>
+        ) : (
+          <Modal.Footer>
+            <Button variant="outline-danger" onClick={() => setShowSkipConfirm(true)}>
+              Skip for now
+            </Button>
+          </Modal.Footer>
+        )}
       </Modal>
 
       <Modal show={showSkipConfirm} onHide={() => setShowSkipConfirm(false)} centered>
