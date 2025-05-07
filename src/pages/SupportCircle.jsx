@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { Button, Card, Form, ListGroup, Spinner, Alert, Container, Row, Col } from "react-bootstrap";
+import { Button, Card, Form, ListGroup, Spinner, Alert, Container, Row, Col, Modal } from "react-bootstrap";
 import { AuthContext } from "../components/AuthProvider";
 import { PersonPlusFill, PencilSquare, TrashFill, TelephoneFill, PersonHeart, PeopleFill, EmojiFrown, EmojiSmile } from "react-bootstrap-icons";
 import api from "../api";

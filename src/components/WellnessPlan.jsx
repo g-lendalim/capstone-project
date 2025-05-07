@@ -40,6 +40,7 @@ export default function WellnessPlan() {
   const [feedback, setFeedback] = useState(null);
   const [savingStatus, setSavingStatus] = useState("idle");
   const [showAllPresets, setShowAllPresets] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   useEffect(() => {
     const loadPlan = async () => {
@@ -47,14 +48,17 @@ export default function WellnessPlan() {
         try {
           setSavingStatus("loading");
           const res = await api.get(`/wellness-plan/user/${currentUser.uid}`);
-          setSelectedItems(res.data.items || []);
-          setSavingStatus("idle");
-        } catch (err) {
-          console.error("Failed to load wellness plan", err);
-          setSavingStatus("error");
+          if (res.data.length > 0) {
+            const item = res.data[0];
+            setSelectedItems(Array.isArray(item.items) ? item.items : []);
+          }
+            setSavingStatus("idle");
+          } catch (err) {
+            console.error("Failed to load wellness plan", err);
+            setSavingStatus("error");
+          }
         }
-      }
-    };
+      };
     loadPlan();
   }, [currentUser]);
 
@@ -72,35 +76,46 @@ export default function WellnessPlan() {
     }
   };
 
-  const handleRemoveItem = (item) => {
-    setSelectedItems(prev => prev.filter(i => i !== item));
+  const handleRemoveItem = async (item) => {
+    if (window.confirm("Are you sure you want to delete this activity from your wellness plan?")) {
+      try {
+        await api.delete("/wellness-plan/item", {
+          params: {
+            user_id: currentUser.uid,
+            label: item,
+          },
+        });
+        setSelectedItems((prev) => prev.filter((i) => i !== item));
+        setFeedback({ type: "success", message: "Item successfully removed." });
+  
+        setTimeout(() => setFeedback(null), 3000);
+      } catch (err) {
+        console.error("Error deleting item:", err);
+        setFeedback({ type: "danger", message: "We couldn't delete the item. Please try again." });
+      }
+    }
   };
-
+  
   const handleSave = async () => {
     try {
       setSavingStatus("saving");
       await api.post("/wellness-plan", {
         user_id: currentUser.uid,
         items: selectedItems,
-      });
+      }); 
       setSavingStatus("success");
       setFeedback({ type: "success", message: "Your wellness plan has been saved!" });
-
-      // Auto-dismiss success message after 3 seconds
       setTimeout(() => {
-        if (feedback?.type === "success") {
-          setFeedback(null);
-        }
+        setFeedback(null);
         setSavingStatus("idle");
-      }, 3000);
+      }, 3000);      
     } catch (err) {
       console.error("Error saving wellness plan", err);
       setSavingStatus("error");
       setFeedback({ type: "danger", message: "Failed to save wellness plan. Please try again." });
     }
-  };
+  };  
 
-  // Combine preset items based on view toggle
   const displayedPresets = showAllPresets
     ? [...presetItems, ...morePresetItems]
     : presetItems;
@@ -232,18 +247,19 @@ export default function WellnessPlan() {
               {selectedItems.length > 0 ? (
                 <div className="mb-4">
                   {selectedItems.map((item, i) => {
-                    // Find matching preset to get color
                     const matchingPreset = [...presetItems, ...morePresetItems].find(preset => preset.label === item);
                     const itemColor = matchingPreset ? matchingPreset.color : "#5e72e4";
 
                     return (
                       <div
                         key={i}
-                        className="d-flex justify-content-between align-items-center p-2 mb-2 rounded"
+                        className="d-flex justify-content-between align-items-center p-2 mb-2 rounded position-relative"
                         style={{
                           backgroundColor: "rgba(0,0,0,0.02)",
                           borderLeft: `3px solid ${itemColor}`
                         }}
+                        onMouseEnter={() => setHoveredItem(item)}
+                        onMouseLeave={() => setHoveredItem(null)}
                       >
                         <span>{item}</span>
                         <Button
@@ -251,6 +267,10 @@ export default function WellnessPlan() {
                           className="text-danger p-0"
                           onClick={() => handleRemoveItem(item)}
                           aria-label={`Remove ${item}`}
+                          style={{
+                            opacity: hoveredItem === item ? 1 : 0,
+                            transition: 'opacity 0.2s ease-in-out'
+                          }}
                         >
                           <XCircleFill />
                         </Button>

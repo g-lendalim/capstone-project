@@ -22,7 +22,6 @@ import {
   GeoAlt,
   EmojiSmile,
   ArrowRight,
-  HandThumbsUp,
   Lightbulb,
   BookmarkHeart,
   CloudSun
