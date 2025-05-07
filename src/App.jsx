@@ -4,8 +4,7 @@ import { BrowserRouter, Route, Routes, Link, Outlet, Navigate } from "react-rout
 import { useNavigate } from 'react-router-dom';
 import api from './api';
 import { getAuth } from "firebase/auth";
-import { AuthContext } from './components/AuthProvider';
-import { AuthProvider } from './components/AuthProvider';
+import { AuthContext, AuthProvider } from './components/AuthProvider';
 import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard"
 import ProfilePage from "./pages/ProfilePage";
@@ -15,6 +14,7 @@ import CopingToolkit from "./pages/CopingToolkit";
 import SupportCircle from "./pages/SupportCircle";
 import EmergencyHotline from "./pages/EmergencyHotline";
 import PrivateRoute from './components/PrivateRoute';
+import LogPromptModal from './components/LogPromptModal';
 import { Provider } from 'react-redux';
 import store from './store';
 
@@ -117,38 +117,38 @@ function Layout() {
       </Navbar>
 
       {currentUser && (
-        <div className="chatbot-fab position-fixed bottom-5 end-3 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-          style={{ right: '8%', width: '60px', height: '60px', zIndex: 9999, cursor: 'pointer' }}
-          onClick={() => setIsChatOpen(!isChatOpen)}>
-          <i className="bi bi-chat-dots fs-4"></i>
-        </div>
-      )}
+          <div className="chatbot-fab d-flex align-items-center justify-content-center"
+            onClick={() => setIsChatOpen(!isChatOpen)}>
+            <i className="bi bi-chat-dots fs-4"></i>
+          </div>
+        )}
 
-      {isChatOpen && (
-        <div className="chat-container" style={{ position: "fixed", bottom: "100px", right: "20px", zIndex: 1040, width: "450px", backgroundColor: "#fff", padding: "20px", boxShadow: "0 0 10px rgba(0,0,0,0.2)", borderRadius: "30px" }}>
-          <div className="header-container">
-            <h5>Chatbot</h5>
+        {isChatOpen && (
+          <div className="chat-container">
+            <div className="header-container">
+              <h5 className="fw-bold">Serene</h5>
+              <small className="text-muted">Your Companion in the Safe Space</small>
+            </div>
+            <div className="messages-container">
+              {messages.map((message, index) => (
+                <div key={index} className={`message-bubble ${message.sender}`}>
+                  {message.text}
+                </div>
+              ))}
+            </div>
+            <form onSubmit={handleSubmit}>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Type your message..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+              />
+              <button type="submit" className="btn btn-primary mt-2">Send</button>
+            </form>
+            {error && <div className="alert alert-danger mt-2">{error}</div>}
           </div>
-          <div className="messages-container" style={{ height: "300px", overflowY: "auto", marginBottom: "10px" }}>
-            {messages.map((message, index) => (
-              <div key={index} className={`message-bubble ${message.sender}`} style={{ padding: "10px", margin: "5px 0", borderRadius: "10px", backgroundColor: message.sender === "user" ? "#d1e7dd" : "#f8d7da" }}>
-                {message.text}
-              </div>
-            ))}
-          </div>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Type your message..."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
-            <button type="submit" className="btn btn-primary mt-2">Send</button>
-          </form>
-          {error && <div className="alert alert-danger mt-2">{error}</div>}
-        </div>
-      )}
+        )}
       <Outlet />
     </>
   );

@@ -1,5 +1,4 @@
 /* Grounding Techniques */
-
 .breath-box {
     width: 180px;
     height: 180px;
@@ -182,4 +181,56 @@
 
 .relief-icon .bi-music-note-beamed {
     color: #dc3545;
+}
+
+/* Chatbot FAB */
+.chatbot-fab {
+    position: fixed;
+    bottom: 60px;
+    right: 80px;
+    width: 60px;
+    height: 60px;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    z-index: 1040;
+}
+
+/* Chat Container */
+.chat-container {
+    position: fixed;
+    bottom: 100px;
+    right: 60px;
+    z-index: 1030;
+    width: 350px;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    border-radius: 15px;
+}
+
+/* Messages Container */
+.messages-container {
+    height: 300px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+/* Message Bubbles */
+.message-bubble {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 10px;
+}
+
+.message-bubble.user {
+    background-color: #d1e7dd;
+    margin-left: 20px;
+}
+
+.message-bubble.ai {
+    background-color: #f8d7da;
+    margin-right: 20px;
 }
