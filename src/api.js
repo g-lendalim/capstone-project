@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
 
-const API_BASE_URL = "https://e4254de5-9bc0-4814-a621-e6cc051e1893-00-8t2uq3t83cm2.pike.replit.dev";
+const API_BASE_URL = "https://capstone-api-sable.vercel.app/";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
